@@ -47,11 +47,17 @@ cp .env.example .env
 docker compose up -d
 ```
 
-En Windows, el `cp` desde PowerShell es `Copy-Item .env.example .env`.
+Eso es todo. Funciona igual en PowerShell, en CMD (con `copy` en lugar de `cp`)
+y en Linux o macOS; lo único que hace falta tener instalado es Docker.
 
-La primera vez tarda unos minutos: se construyen las imágenes, se instalan las
-dependencias de Composer y de npm, y se ejecutan las migraciones
-(`AUTO_MIGRATE=true` viene activado en desarrollo).
+> **Ojo:** `docker compose up -d` devuelve el control en unos segundos, pero la
+> primera vez el entorno **aún no está listo**: por dentro se están instalando
+> las dependencias de Composer y de npm, y eso tarda varios minutos. Espera a
+> ver `Watch mode enabled` en los registros antes de abrir el navegador:
+>
+> ```bash
+> docker compose logs -f frontend
+> ```
 
 Cuando termine:
 
@@ -62,16 +68,29 @@ Cuando termine:
 | Estado de la API   | <http://localhost:8000/api/health> |
 | PostgreSQL         | `localhost:5432`                   |
 
-Para seguir el avance de la instalación inicial:
-
-```bash
-docker compose logs -f
-```
-
 Datos de prueba (30 personas y 30 vehículos):
 
 ```bash
 docker compose exec app php artisan db:seed
+```
+
+### Consumo y tiempos
+
+Medido en Windows con Docker Desktop:
+
+| | |
+| --- | --- |
+| Memoria en reposo | ~670 MB, de los que ~570 MB son el servidor de desarrollo de Angular |
+| Disco | ~3,3 GB entre imágenes, volúmenes y caché de construcción |
+| Primer arranque | Varios minutos (instalación de dependencias) |
+| Arranques siguientes | ~20 s hasta que la API responde |
+| En reposo | 0 % de CPU |
+
+Si necesitas recuperar memoria mientras trabajas solo en el backend, puedes
+parar el frontend y seguir usando la API:
+
+```bash
+docker compose stop frontend
 ```
 
 ---
@@ -97,6 +116,25 @@ Angular ya compilado y hace de proxy hacia `app`, y se añaden `queue` y
 `scheduler`. Ver [Despliegue](#despliegue-en-digitalocean).
 
 ---
+
+## Tecnologías
+
+| Capa                | Elección                       | Notas                                                        |
+| ------------------- | ------------------------------ | ------------------------------------------------------------ |
+| Base de datos       | PostgreSQL 17                  | Con las extensiones `unaccent`, `pg_trgm` y `citext`          |
+| Acceso a datos      | Eloquent (el ORM de Laravel)   | Sin Doctrine ni SQL a mano                                    |
+| Esquema             | Migraciones de Laravel         | Una carpeta por módulo, no hay `.sql` sueltos                 |
+| API                 | Laravel 13 sobre PHP 8.4       | REST con API Resources; sin Blade ni Inertia                  |
+| Interfaz            | Angular 22                     | Componentes standalone, señales, sin Zone.js                  |
+| Estilos             | SCSS propio                    | **Sin Bootstrap, Tailwind ni Angular Material**               |
+| Iconos              | SVG escritos a mano            | En `shared/components/icon`, sin librería de iconos           |
+| Tipografía          | Fuentes del sistema            | Sin Google Fonts: cero peticiones a servidores externos       |
+
+La ausencia de dependencias visuales es deliberada: la interfaz no descarga
+nada de terceros, lo que la hace más rápida, reproducible y fácil de auditar.
+Todo el diseño se apoya en variables CSS declaradas en `frontend/src/styles.scss`
+(colores, espaciado, radios, sombras), de modo que cambiar la identidad visual
+del sistema es editar un puñado de valores en un único archivo.
 
 ## Estructura del proyecto
 
