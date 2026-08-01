@@ -1,0 +1,209 @@
+<div class="page-header">
+  <div>
+    <h1>Registro de Personas</h1>
+    <p>Consulta, da de alta y mantén actualizados los datos de las personas.</p>
+  </div>
+
+  <a class="btn btn--primary" routerLink="nueva">
+    <app-icon name="plus" [size]="16" />
+    Nueva persona
+  </a>
+</div>
+
+<section class="card">
+  <form class="filters" (submit)="$event.preventDefault()">
+    <div class="field filters__search">
+      <label class="field__label" for="person-search">Buscar</label>
+      <div class="search">
+        <app-icon class="search__icon" name="search" [size]="17" />
+        <input
+          id="person-search"
+          class="input search__input"
+          type="search"
+          placeholder="Nombre, apellido, documento o correo…"
+          [value]="filters().search"
+          (input)="onSearch($any($event.target).value)"
+        />
+      </div>
+    </div>
+
+    <div class="field">
+      <label class="field__label" for="person-document-type">Tipo de documento</label>
+      <select
+        id="person-document-type"
+        class="select"
+        [ngModel]="filters().document_type"
+        name="document_type"
+        (ngModelChange)="patchFilters({ document_type: $event })"
+      >
+        <option value="">Todos</option>
+        @for (option of metadata()?.document_types ?? []; track option.value) {
+          <option [value]="option.value">{{ option.label }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="field">
+      <label class="field__label" for="person-status">Estado</label>
+      <select
+        id="person-status"
+        class="select"
+        [ngModel]="filters().is_active"
+        name="is_active"
+        (ngModelChange)="patchFilters({ is_active: $event })"
+      >
+        <option value="">Todos</option>
+        <option value="1">Activas</option>
+        <option value="0">Inactivas</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label class="field__label" for="person-per-page">Por página</label>
+      <select
+        id="person-per-page"
+        class="select"
+        [ngModel]="filters().per_page"
+        name="per_page"
+        (ngModelChange)="patchFilters({ per_page: +$event })"
+      >
+        @for (size of [15, 25, 50, 100]; track size) {
+          <option [value]="size">{{ size }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="filters__toggles">
+      <label class="checkbox">
+        <input
+          type="checkbox"
+          [ngModel]="filters().with_trashed"
+          name="with_trashed"
+          (ngModelChange)="patchFilters({ with_trashed: $event })"
+        />
+        Incluir eliminadas
+      </label>
+
+      @if (hasFilters()) {
+        <button type="button" class="btn btn--link btn--sm" (click)="resetFilters()">
+          <app-icon name="close" [size]="14" />
+          Limpiar filtros
+        </button>
+      }
+    </div>
+  </form>
+
+  @if (loading() && items().length === 0) {
+    <app-spinner label="Cargando personas…" />
+  } @else if (items().length === 0) {
+    <app-empty-state
+      icon="users"
+      title="No hay personas que mostrar"
+      [description]="
+        hasFilters()
+          ? 'Ninguna persona coincide con los filtros aplicados.'
+          : 'Todavía no se ha registrado ninguna persona.'
+      "
+    >
+      @if (hasFilters()) {
+        <button type="button" class="btn btn--ghost" (click)="resetFilters()">
+          Limpiar filtros
+        </button>
+      } @else {
+        <a class="btn btn--primary" routerLink="nueva">
+          <app-icon name="plus" [size]="16" />
+          Registrar la primera
+        </a>
+      }
+    </app-empty-state>
+  } @else {
+    <div class="table-wrap" [class.is-loading]="loading()">
+      <table class="table">
+        <caption class="visually-hidden">
+          Listado de personas registradas
+        </caption>
+        <thead>
+          <tr>
+            <th class="is-sortable" (click)="sortBy('last_name')">
+              <span class="th-label">
+                Persona
+                @if (sortIcon('last_name'); as icon) {
+                  <app-icon [name]="icon" [size]="13" />
+                }
+              </span>
+            </th>
+            <th class="is-sortable" (click)="sortBy('document_number')">
+              <span class="th-label">
+                Documento
+                @if (sortIcon('document_number'); as icon) {
+                  <app-icon [name]="icon" [size]="13" />
+                }
+              </span>
+            </th>
+            <th>Contacto</th>
+            <th class="is-sortable" (click)="sortBy('birth_date')">
+              <span class="th-label">
+                Edad
+                @if (sortIcon('birth_date'); as icon) {
+                  <app-icon [name]="icon" [size]="13" />
+                }
+              </span>
+            </th>
+            <th>Estado</th>
+            <th class="cell-actions">Acciones</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          @for (person of items(); track person.id) {
+            <tr [class.is-trashed]="person.deleted_at">
+              <td>
+                <span class="cell-title">{{ person.full_name }}</span>
+                <span class="cell-sub">{{ person.gender_label }}</span>
+              </td>
+              <td>
+                <span class="cell-title">{{ person.document_number }}</span>
+                <span class="cell-sub">{{ person.document_type_label }}</span>
+              </td>
+              <td>
+                <span class="cell-title">{{ person.email ?? '—' }}</span>
+                <span class="cell-sub">{{ person.phone ?? 'Sin teléfono' }}</span>
+              </td>
+              <td>{{ person.age !== null ? person.age + ' años' : '—' }}</td>
+              <td>
+                @if (person.deleted_at) {
+                  <span class="badge badge--warning">Eliminada</span>
+                } @else if (person.is_active) {
+                  <span class="badge badge--success">Activa</span>
+                } @else {
+                  <span class="badge">Inactiva</span>
+                }
+              </td>
+              <td class="cell-actions">
+                <div class="row-actions">
+                  @if (person.deleted_at) {
+                    <button type="button" class="btn btn--ghost btn--sm" (click)="restore(person)">
+                      <app-icon name="restore" [size]="15" />
+                      Restaurar
+                    </button>
+                  } @else {
+                    <a class="btn btn--ghost btn--sm" [routerLink]="[person.id, 'editar']">
+                      <app-icon name="pencil" [size]="15" />
+                      Editar
+                    </a>
+                    <button type="button" class="btn btn--ghost btn--sm" (click)="remove(person)">
+                      <app-icon name="trash" [size]="15" />
+                      Eliminar
+                    </button>
+                  }
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <app-pagination [meta]="meta()" (pageChange)="goToPage($event)" />
+  }
+</section>

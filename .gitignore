@@ -1,0 +1,59 @@
+# ---------------------------------------------------------------- Entorno
+.env
+.env.*
+!.env.example
+
+# ------------------------------------------------------------- Dependencias
+/backend/vendor/
+/frontend/node_modules/
+node_modules/
+
+# ------------------------------------------------------------------ Laravel
+/backend/.env
+/backend/.phpunit.result.cache
+/backend/.phpunit.cache/
+/backend/storage/*.key
+/backend/storage/pail/
+/backend/storage/framework/cache/*
+!/backend/storage/framework/cache/.gitignore
+/backend/storage/framework/sessions/*
+!/backend/storage/framework/sessions/.gitignore
+/backend/storage/framework/views/*
+!/backend/storage/framework/views/.gitignore
+/backend/storage/framework/testing/
+/backend/storage/logs/*.log
+/backend/bootstrap/cache/*.php
+/backend/public/storage
+/backend/public/hot
+/backend/database/*.sqlite*
+/backend/auth.json
+
+# ------------------------------------------------------------------ Angular
+/frontend/dist/
+/frontend/tmp/
+/frontend/out-tsc/
+/frontend/.angular/
+/frontend/coverage/
+/frontend/.nx/
+
+# --------------------------------------------------------------------- IDEs
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.sublime-project
+*.sublime-workspace
+.fleet/
+.nova/
+.zed/
+
+# ---------------------------------------------------------------- Sistema
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+*~
+
+# ---------------------------------------------------------------- Registros
+*.log
+npm-debug.log*
+yarn-error.log*

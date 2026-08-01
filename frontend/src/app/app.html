@@ -1,0 +1,36 @@
+<header class="topbar">
+  <div class="container topbar__inner">
+    <a class="brand" routerLink="/">
+      <app-icon class="brand__mark" name="logo" [size]="22" />
+      <span class="brand__name">{{ appName }}</span>
+    </a>
+
+    <nav class="nav" aria-label="Módulos del sistema">
+      <a
+        class="nav__link"
+        routerLink="/"
+        routerLinkActive="is-active"
+        [routerLinkActiveOptions]="{ exact: true }"
+      >
+        <app-icon name="home" [size]="16" />
+        Inicio
+      </a>
+
+      @for (module of modules; track module.key) {
+        <a class="nav__link" [routerLink]="module.path" routerLinkActive="is-active">
+          <app-icon [name]="module.icon" [size]="16" />
+          {{ module.name }}
+        </a>
+      }
+    </nav>
+  </div>
+</header>
+
+<main class="main">
+  <div class="container">
+    <router-outlet />
+  </div>
+</main>
+
+<app-toast-host />
+<app-confirm-dialog />

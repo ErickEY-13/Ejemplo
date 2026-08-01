@@ -1,0 +1,192 @@
+<div class="page-header">
+  <div>
+    <h1>{{ isEdit() ? 'Editar persona' : 'Nueva persona' }}</h1>
+    <p>Los campos marcados con <span class="field__required">*</span> son obligatorios.</p>
+  </div>
+
+  <a class="btn btn--ghost" routerLink="/personas">
+    <app-icon name="arrow-left" [size]="16" />
+    Volver al listado
+  </a>
+</div>
+
+@if (loading()) {
+  <div class="card">
+    <app-spinner label="Cargando datos de la persona…" />
+  </div>
+} @else {
+  <form class="card form" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+    @if (generalErrors().length > 0) {
+      <div class="alert" role="alert">
+        <app-icon class="alert__icon" name="alert-circle" [size]="18" />
+        <div>
+          <strong>No se pudo guardar:</strong>
+          <ul>
+            @for (message of generalErrors(); track message) {
+              <li>{{ message }}</li>
+            }
+          </ul>
+        </div>
+      </div>
+    }
+
+    <fieldset class="form__section">
+      <legend class="form__legend">Identificación</legend>
+
+      <div class="form__grid">
+        <div class="field">
+          <label class="field__label" for="document_type">
+            Tipo de documento <span class="field__required">*</span>
+          </label>
+          <select id="document_type" class="select" formControlName="document_type">
+            @for (option of metadata()?.document_types ?? []; track option.value) {
+              <option [value]="option.value">{{ option.label }}</option>
+            }
+          </select>
+          @if (errorFor('document_type', 'el tipo de documento'); as message) {
+            <span class="field__error">{{ message }}</span>
+          }
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="document_number">
+            Número de documento <span class="field__required">*</span>
+          </label>
+          <input
+            id="document_number"
+            class="input"
+            type="text"
+            formControlName="document_number"
+            autocomplete="off"
+            [class.is-invalid]="!!errorFor('document_number', 'el número de documento')"
+          />
+          @if (errorFor('document_number', 'el número de documento'); as message) {
+            <span class="field__error">{{ message }}</span>
+          }
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset class="form__section">
+      <legend class="form__legend">Datos personales</legend>
+
+      <div class="form__grid">
+        <div class="field">
+          <label class="field__label" for="first_name">
+            Nombres <span class="field__required">*</span>
+          </label>
+          <input
+            id="first_name"
+            class="input"
+            type="text"
+            formControlName="first_name"
+            [class.is-invalid]="!!errorFor('first_name', 'los nombres')"
+          />
+          @if (errorFor('first_name', 'los nombres'); as message) {
+            <span class="field__error">{{ message }}</span>
+          }
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="last_name">
+            Apellidos <span class="field__required">*</span>
+          </label>
+          <input
+            id="last_name"
+            class="input"
+            type="text"
+            formControlName="last_name"
+            [class.is-invalid]="!!errorFor('last_name', 'los apellidos')"
+          />
+          @if (errorFor('last_name', 'los apellidos'); as message) {
+            <span class="field__error">{{ message }}</span>
+          }
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="birth_date">Fecha de nacimiento</label>
+          <input id="birth_date" class="input" type="date" formControlName="birth_date" />
+          @if (errorFor('birth_date', 'la fecha de nacimiento'); as message) {
+            <span class="field__error">{{ message }}</span>
+          }
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="gender">Género</label>
+          <select id="gender" class="select" formControlName="gender">
+            @for (option of metadata()?.genders ?? []; track option.value) {
+              <option [value]="option.value">{{ option.label }}</option>
+            }
+          </select>
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset class="form__section">
+      <legend class="form__legend">Contacto</legend>
+
+      <div class="form__grid">
+        <div class="field">
+          <label class="field__label" for="email">Correo electrónico</label>
+          <input
+            id="email"
+            class="input"
+            type="email"
+            formControlName="email"
+            autocomplete="email"
+            [class.is-invalid]="!!errorFor('email', 'el correo electrónico')"
+          />
+          @if (errorFor('email', 'el correo electrónico'); as message) {
+            <span class="field__error">{{ message }}</span>
+          }
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="phone">Teléfono</label>
+          <input id="phone" class="input" type="tel" formControlName="phone" autocomplete="tel" />
+          @if (errorFor('phone', 'el teléfono'); as message) {
+            <span class="field__error">{{ message }}</span>
+          }
+        </div>
+
+        <div class="field form__full">
+          <label class="field__label" for="address">Dirección</label>
+          <input id="address" class="input" type="text" formControlName="address" />
+          @if (errorFor('address', 'la dirección'); as message) {
+            <span class="field__error">{{ message }}</span>
+          }
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset class="form__section">
+      <legend class="form__legend">Otros</legend>
+
+      <div class="form__grid">
+        <div class="field form__full">
+          <label class="field__label" for="notes">Observaciones</label>
+          <textarea id="notes" class="textarea" formControlName="notes"></textarea>
+          @if (errorFor('notes', 'las observaciones'); as message) {
+            <span class="field__error">{{ message }}</span>
+          }
+        </div>
+
+        <div class="field">
+          <span class="field__label">Estado</span>
+          <label class="checkbox">
+            <input type="checkbox" formControlName="is_active" />
+            Persona activa
+          </label>
+          <span class="field__hint">Las personas inactivas se conservan pero quedan marcadas.</span>
+        </div>
+      </div>
+    </fieldset>
+
+    <div class="form__actions">
+      <a class="btn btn--ghost" routerLink="/personas">Cancelar</a>
+      <button type="submit" class="btn btn--primary" [disabled]="saving()">
+        {{ saving() ? 'Guardando…' : isEdit() ? 'Guardar cambios' : 'Registrar persona' }}
+      </button>
+    </div>
+  </form>
+}

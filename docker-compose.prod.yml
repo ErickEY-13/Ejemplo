@@ -1,0 +1,146 @@
+# ===========================================================================
+# Entorno de PRODUCCIÓN (Droplet de DigitalOcean)
+#
+# En el servidor, el archivo .env debe contener:
+#
+#   COMPOSE_FILE=docker-compose.prod.yml
+#
+# ...de modo que baste con:
+#
+#   docker compose up -d --build
+#
+# A diferencia de desarrollo, el código NO se monta: se copia dentro de las
+# imágenes durante el build, y Angular se compila y se sirve como estáticos
+# desde el mismo Nginx que expone la API (mismo origen, sin CORS).
+# ===========================================================================
+
+name: ${COMPOSE_PROJECT_NAME:-ejemplo}
+
+x-app-environment: &app-environment
+  APP_NAME: ${APP_NAME:-Ejemplo}
+  APP_ENV: production
+  APP_KEY: ${APP_KEY:?Define APP_KEY en el archivo .env}
+  APP_DEBUG: "false"
+  APP_URL: ${APP_URL:?Define APP_URL en el archivo .env}
+  FRONTEND_URL: ${FRONTEND_URL:-${APP_URL}}
+  LOG_CHANNEL: stderr
+  LOG_LEVEL: ${LOG_LEVEL:-warning}
+  DB_CONNECTION: pgsql
+  DB_HOST: db
+  DB_PORT: 5432
+  DB_DATABASE: ${DB_DATABASE:-ejemplo}
+  DB_USERNAME: ${DB_USERNAME:-ejemplo}
+  DB_PASSWORD: ${DB_PASSWORD:?Define DB_PASSWORD en el archivo .env}
+  CACHE_STORE: database
+  SESSION_DRIVER: database
+  QUEUE_CONNECTION: database
+
+services:
+  # ------------------------------------------------------------------ Base de datos
+  db:
+    image: postgres:17-alpine
+    container_name: ${COMPOSE_PROJECT_NAME:-ejemplo}_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_DATABASE:-ejemplo}
+      POSTGRES_USER: ${DB_USERNAME:-ejemplo}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Define DB_PASSWORD en el archivo .env}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      - ./docker/postgres/init:/docker-entrypoint-initdb.d:ro
+    # Sin `ports`: la base de datos no se expone fuera de la red Docker.
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-ejemplo} -d ${DB_DATABASE:-ejemplo}"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 15s
+    networks:
+      - backend
+
+  # ------------------------------------------------------------------ Laravel (PHP-FPM)
+  app:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+      target: production
+    image: ${COMPOSE_PROJECT_NAME:-ejemplo}-app:latest
+    container_name: ${COMPOSE_PROJECT_NAME:-ejemplo}_app
+    restart: unless-stopped
+    environment:
+      <<: *app-environment
+      AUTO_MIGRATE: ${AUTO_MIGRATE:-false}
+    volumes:
+      - app_storage:/var/www/html/storage
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - backend
+
+  # ------------------------------------------------------------------ Worker de colas
+  queue:
+    image: ${COMPOSE_PROJECT_NAME:-ejemplo}-app:latest
+    container_name: ${COMPOSE_PROJECT_NAME:-ejemplo}_queue
+    restart: unless-stopped
+    command: ["php", "artisan", "queue:work", "--tries=3", "--max-time=3600", "--sleep=3"]
+    environment:
+      <<: *app-environment
+      AUTO_MIGRATE: "false"
+    volumes:
+      - app_storage:/var/www/html/storage
+    depends_on:
+      app:
+        condition: service_started
+      db:
+        condition: service_healthy
+    networks:
+      - backend
+
+  # ------------------------------------------------------------------ Planificador
+  scheduler:
+    image: ${COMPOSE_PROJECT_NAME:-ejemplo}-app:latest
+    container_name: ${COMPOSE_PROJECT_NAME:-ejemplo}_scheduler
+    restart: unless-stopped
+    command: ["php", "artisan", "schedule:work"]
+    environment:
+      <<: *app-environment
+      AUTO_MIGRATE: "false"
+    volumes:
+      - app_storage:/var/www/html/storage
+    depends_on:
+      app:
+        condition: service_started
+      db:
+        condition: service_healthy
+    networks:
+      - backend
+
+  # ------------------------------------------------------------------ Nginx + Angular compilado
+  web:
+    build:
+      context: .
+      dockerfile: docker/nginx/Dockerfile
+      target: production
+    container_name: ${COMPOSE_PROJECT_NAME:-ejemplo}_web
+    restart: unless-stopped
+    volumes:
+      # Permite servir los archivos subidos (public/storage) generados por Laravel.
+      - app_storage:/var/www/html/storage:ro
+    ports:
+      - "${HTTP_PORT:-80}:80"
+    depends_on:
+      - app
+    networks:
+      - backend
+
+volumes:
+  db_data:
+    driver: local
+  app_storage:
+    driver: local
+
+networks:
+  backend:
+    driver: bridge

@@ -1,0 +1,30 @@
+# Normaliza los finales de línea en el repositorio.
+* text=auto eol=lf
+
+# Los scripts que se ejecutan dentro de los contenedores DEBEN llevar LF:
+# con CRLF, Linux falla con "no such file or directory" al arrancar.
+*.sh            text eol=lf
+Dockerfile      text eol=lf
+*.conf          text eol=lf
+*.ini           text eol=lf
+.env.example    text eol=lf
+
+# Archivos de Windows
+*.bat           text eol=crlf
+*.cmd           text eol=crlf
+
+# Binarios
+*.png           binary
+*.jpg           binary
+*.jpeg          binary
+*.gif           binary
+*.ico           binary
+*.woff          binary
+*.woff2         binary
+*.ttf           binary
+*.eot           binary
+*.pdf           binary
+
+# Fuera de los diffs y de los archivos exportados
+/backend/vendor         export-ignore
+/frontend/node_modules  export-ignore

@@ -1,0 +1,217 @@
+<div class="page-header">
+  <div>
+    <h1>{{ isEdit() ? 'Editar vehículo' : 'Nuevo vehículo' }}</h1>
+    <p>Los campos marcados con <span class="field__required">*</span> son obligatorios.</p>
+  </div>
+
+  <a class="btn btn--ghost" routerLink="/vehiculos">
+    <app-icon name="arrow-left" [size]="16" />
+    Volver al listado
+  </a>
+</div>
+
+@if (loading()) {
+  <div class="card">
+    <app-spinner label="Cargando datos del vehículo…" />
+  </div>
+} @else {
+  <form class="card form" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+    @if (generalErrors().length > 0) {
+      <div class="alert" role="alert">
+        <app-icon class="alert__icon" name="alert-circle" [size]="18" />
+        <div>
+          <strong>No se pudo guardar:</strong>
+          <ul>
+            @for (message of generalErrors(); track message) {
+              <li>{{ message }}</li>
+            }
+          </ul>
+        </div>
+      </div>
+    }
+
+    <fieldset class="form__section">
+      <legend class="form__legend">Identificación</legend>
+
+      <div class="form__grid">
+        <div class="field">
+          <label class="field__label" for="plate">Placa <span class="field__required">*</span></label>
+          <input
+            id="plate"
+            class="input input--plate"
+            type="text"
+            formControlName="plate"
+            placeholder="ABC-123"
+            autocomplete="off"
+            [class.is-invalid]="!!errorFor('plate', 'la placa')"
+          />
+          @if (errorFor('plate', 'la placa'); as message) {
+            <span class="field__error">{{ message }}</span>
+          } @else {
+            <span class="field__hint">Entre 5 y 15 caracteres: letras, números y guiones.</span>
+          }
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="vin">Número de chasis (VIN)</label>
+          <input
+            id="vin"
+            class="input"
+            type="text"
+            formControlName="vin"
+            maxlength="17"
+            autocomplete="off"
+            [class.is-invalid]="!!errorFor('vin', 'el VIN')"
+          />
+          @if (errorFor('vin', 'el VIN'); as message) {
+            <span class="field__error">{{ message }}</span>
+          } @else {
+            <span class="field__hint">17 caracteres. No admite las letras I, O ni Q.</span>
+          }
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="engine_number">Número de motor</label>
+          <input id="engine_number" class="input" type="text" formControlName="engine_number" />
+          @if (errorFor('engine_number', 'el número de motor'); as message) {
+            <span class="field__error">{{ message }}</span>
+          }
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset class="form__section">
+      <legend class="form__legend">Características</legend>
+
+      <div class="form__grid">
+        <div class="field">
+          <label class="field__label" for="brand">Marca <span class="field__required">*</span></label>
+          <input
+            id="brand"
+            class="input"
+            type="text"
+            formControlName="brand"
+            list="vehicle-brands"
+            [class.is-invalid]="!!errorFor('brand', 'la marca')"
+          />
+          <datalist id="vehicle-brands">
+            @for (brand of metadata()?.brands ?? []; track brand) {
+              <option [value]="brand"></option>
+            }
+          </datalist>
+          @if (errorFor('brand', 'la marca'); as message) {
+            <span class="field__error">{{ message }}</span>
+          }
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="model">Modelo <span class="field__required">*</span></label>
+          <input
+            id="model"
+            class="input"
+            type="text"
+            formControlName="model"
+            [class.is-invalid]="!!errorFor('model', 'el modelo')"
+          />
+          @if (errorFor('model', 'el modelo'); as message) {
+            <span class="field__error">{{ message }}</span>
+          }
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="year">Año <span class="field__required">*</span></label>
+          <input
+            id="year"
+            class="input"
+            type="number"
+            inputmode="numeric"
+            min="1900"
+            [max]="maxYear"
+            formControlName="year"
+            [class.is-invalid]="!!errorFor('year', 'el año')"
+          />
+          @if (errorFor('year', 'el año'); as message) {
+            <span class="field__error">{{ message }}</span>
+          }
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="type">
+            Tipo de vehículo <span class="field__required">*</span>
+          </label>
+          <select id="type" class="select" formControlName="type">
+            @for (option of metadata()?.types ?? []; track option.value) {
+              <option [value]="option.value">{{ option.label }}</option>
+            }
+          </select>
+          @if (errorFor('type', 'el tipo de vehículo'); as message) {
+            <span class="field__error">{{ message }}</span>
+          }
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="fuel_type">Combustible</label>
+          <select id="fuel_type" class="select" formControlName="fuel_type">
+            @for (option of metadata()?.fuel_types ?? []; track option.value) {
+              <option [value]="option.value">{{ option.label }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="color">Color</label>
+          <input id="color" class="input" type="text" formControlName="color" />
+          @if (errorFor('color', 'el color'); as message) {
+            <span class="field__error">{{ message }}</span>
+          }
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="mileage">Kilometraje</label>
+          <input
+            id="mileage"
+            class="input"
+            type="number"
+            inputmode="numeric"
+            min="0"
+            formControlName="mileage"
+            [class.is-invalid]="!!errorFor('mileage', 'el kilometraje')"
+          />
+          @if (errorFor('mileage', 'el kilometraje'); as message) {
+            <span class="field__error">{{ message }}</span>
+          }
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset class="form__section">
+      <legend class="form__legend">Otros</legend>
+
+      <div class="form__grid">
+        <div class="field form__full">
+          <label class="field__label" for="notes">Observaciones</label>
+          <textarea id="notes" class="textarea" formControlName="notes"></textarea>
+          @if (errorFor('notes', 'las observaciones'); as message) {
+            <span class="field__error">{{ message }}</span>
+          }
+        </div>
+
+        <div class="field">
+          <span class="field__label">Estado</span>
+          <label class="checkbox">
+            <input type="checkbox" formControlName="is_active" />
+            Vehículo activo
+          </label>
+          <span class="field__hint">Los vehículos inactivos se conservan pero quedan marcados.</span>
+        </div>
+      </div>
+    </fieldset>
+
+    <div class="form__actions">
+      <a class="btn btn--ghost" routerLink="/vehiculos">Cancelar</a>
+      <button type="submit" class="btn btn--primary" [disabled]="saving()">
+        {{ saving() ? 'Guardando…' : isEdit() ? 'Guardar cambios' : 'Registrar vehículo' }}
+      </button>
+    </div>
+  </form>
+}

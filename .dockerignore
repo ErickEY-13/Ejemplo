@@ -1,0 +1,42 @@
+# Mantiene el contexto de build pequeño y evita copiar artefactos del host
+# dentro de las imágenes (dependencias compiladas para otro sistema, cachés,
+# secretos, etc.).
+
+.git
+.gitignore
+.github
+.idea
+.vscode
+*.md
+!backend/app/Modules/*/README.md
+
+# Secretos y entornos locales
+.env
+.env.*
+!.env.example
+backend/.env
+backend/.env.*
+!backend/.env.example
+
+# Dependencias: se instalan dentro de la imagen
+backend/vendor
+frontend/node_modules
+frontend/dist
+frontend/.angular
+frontend/coverage
+
+# Estado local de Laravel
+backend/storage/logs/*
+backend/storage/framework/cache/data/*
+backend/storage/framework/sessions/*
+backend/storage/framework/views/*
+backend/storage/framework/testing/*
+backend/bootstrap/cache/*
+backend/.phpunit.result.cache
+backend/.phpunit.cache
+backend/database/*.sqlite*
+backend/public/storage
+
+# Sistema
+.DS_Store
+Thumbs.db

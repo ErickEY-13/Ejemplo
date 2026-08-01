@@ -1,0 +1,30 @@
+<section class="hero">
+  <p class="hero__eyebrow">{{ appName }}</p>
+  <h1 class="hero__title">Menú principal</h1>
+  <p class="hero__text">
+    El sistema está dividido en módulos independientes. Elige con cuál quieres trabajar.
+  </p>
+</section>
+
+<div class="modules">
+  @for (module of modules; track module.key) {
+    <a class="module card" [routerLink]="module.path">
+      <span class="module__icon">
+        <app-icon [name]="module.icon" [size]="26" />
+      </span>
+
+      <span class="module__body">
+        <span class="module__name">{{ module.name }}</span>
+        <span class="module__description">{{ module.description }}</span>
+      </span>
+
+      <span class="module__footer">
+        <span class="badge">{{ module.owner }}</span>
+        <span class="module__cta">
+          Entrar
+          <app-icon name="arrow-right" [size]="16" />
+        </span>
+      </span>
+    </a>
+  }
+</div>

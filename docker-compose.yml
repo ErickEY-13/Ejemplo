@@ -1,0 +1,122 @@
+# ===========================================================================
+# Entorno de DESARROLLO
+#
+#   docker compose up -d
+#
+#   Angular  -> http://localhost:4200
+#   API      -> http://localhost:8000/api
+#   Postgres -> localhost:5432
+#
+# El código se monta desde el host, así que cualquier cambio se refleja al
+# instante (hot reload en Angular, sin build en Laravel).
+# ===========================================================================
+
+name: ${COMPOSE_PROJECT_NAME:-ejemplo}
+
+services:
+  # ------------------------------------------------------------------ Base de datos
+  db:
+    image: postgres:17-alpine
+    container_name: ${COMPOSE_PROJECT_NAME:-ejemplo}_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_DATABASE:-ejemplo}
+      POSTGRES_USER: ${DB_USERNAME:-ejemplo}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-secret}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      - ./docker/postgres/init:/docker-entrypoint-initdb.d:ro
+    ports:
+      - "${DB_PORT_HOST:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-ejemplo} -d ${DB_DATABASE:-ejemplo}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+    networks:
+      - backend
+
+  # ------------------------------------------------------------------ Laravel (PHP-FPM)
+  app:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+      target: development
+      args:
+        UID: ${UID:-1000}
+        GID: ${GID:-1000}
+    container_name: ${COMPOSE_PROJECT_NAME:-ejemplo}_app
+    restart: unless-stopped
+    environment:
+      APP_NAME: ${APP_NAME:-Ejemplo}
+      APP_ENV: local
+      APP_DEBUG: "true"
+      APP_URL: ${APP_URL:-http://localhost:8000}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:4200}
+      DB_CONNECTION: pgsql
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_DATABASE: ${DB_DATABASE:-ejemplo}
+      DB_USERNAME: ${DB_USERNAME:-ejemplo}
+      DB_PASSWORD: ${DB_PASSWORD:-secret}
+      AUTO_MIGRATE: ${AUTO_MIGRATE:-true}
+    volumes:
+      - ./backend:/var/www/html
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - backend
+
+  # ------------------------------------------------------------------ Nginx (API)
+  nginx:
+    image: nginx:1.29-alpine
+    container_name: ${COMPOSE_PROJECT_NAME:-ejemplo}_nginx
+    restart: unless-stopped
+    volumes:
+      - ./backend:/var/www/html:ro
+      - ./docker/nginx/conf.d/dev.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./docker/nginx/snippets:/etc/nginx/snippets:ro
+    ports:
+      - "${API_PORT:-8000}:80"
+    depends_on:
+      - app
+    networks:
+      - backend
+
+  # ------------------------------------------------------------------ Angular (ng serve)
+  frontend:
+    build:
+      context: .
+      dockerfile: docker/node/Dockerfile
+      target: development
+    container_name: ${COMPOSE_PROJECT_NAME:-ejemplo}_frontend
+    restart: unless-stopped
+    environment:
+      # Destino al que el dev-server de Angular reenvía /api (ver proxy.conf.js).
+      # Apunta al Nginx interno, así el SPA y la API comparten origen igual que
+      # en producción y no hace falta CORS.
+      API_PROXY_TARGET: http://nginx
+    volumes:
+      - ./frontend:/app
+      # Volumen nombrado: node_modules no se sincroniza con el host
+      # (mucho más rápido en Windows/macOS y evita conflictos de binarios).
+      - frontend_node_modules:/app/node_modules
+    ports:
+      - "${FRONTEND_PORT:-4200}:4200"
+    depends_on:
+      - nginx
+    networks:
+      - backend
+
+volumes:
+  db_data:
+    driver: local
+  frontend_node_modules:
+    driver: local
+
+networks:
+  backend:
+    driver: bridge
