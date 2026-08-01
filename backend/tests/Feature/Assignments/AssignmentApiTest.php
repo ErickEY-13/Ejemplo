@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Assignments;
 
+use App\Modules\Assignments\Models\VehicleAssignment;
 use App\Modules\Persons\Models\Person;
 use App\Modules\Vehicles\Models\Vehicle;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
@@ -32,12 +34,15 @@ class AssignmentApiTest extends TestCase
 
         $this->putJson("/api/assignments/{$vehicle->id}", [
             'person_id' => $person->id,
+            'expected_return_at' => now()->addDays(3)->toDateString(),
             'notes' => 'Uso exclusivo en horario laboral.',
         ])
             ->assertCreated()
             ->assertJsonPath('data.person.id', $person->id)
             ->assertJsonPath('data.person.full_name', $person->full_name)
             ->assertJsonPath('data.person.site', 'Obras Públicas')
+            ->assertJsonPath('data.expected_return_at', now()->addDays(3)->toDateString())
+            ->assertJsonPath('data.is_overdue', false)
             ->assertJsonPath('data.notes', 'Uso exclusivo en horario laboral.');
 
         $this->assertDatabaseHas('vehicle_assignments', [
@@ -130,6 +135,40 @@ class AssignmentApiTest extends TestCase
             ->assertOk()
             ->assertJsonPath('data.person.id', $person->id)
             ->assertJsonPath('data.person.deleted_at', fn (?string $value) => $value !== null);
+    }
+
+    #[Test]
+    public function rechaza_una_fecha_de_devolucion_en_el_pasado(): void
+    {
+        $vehicle = Vehicle::factory()->create();
+        $person = Person::factory()->create();
+
+        $this->putJson("/api/assignments/{$vehicle->id}", [
+            'person_id' => $person->id,
+            'expected_return_at' => now()->subDay()->toDateString(),
+        ])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('expected_return_at');
+    }
+
+    #[Test]
+    public function marca_como_atrasada_una_asignacion_vencida(): void
+    {
+        $vehicle = Vehicle::factory()->create();
+        $person = Person::factory()->create();
+
+        $assignment = VehicleAssignment::query()->create([
+            'vehicle_id' => $vehicle->id,
+            'person_id' => $person->id,
+            'assigned_at' => Carbon::now()->subDays(10),
+            'expected_return_at' => Carbon::now()->subDays(3)->toDateString(),
+        ]);
+
+        $this->getJson("/api/assignments/{$vehicle->id}")
+            ->assertOk()
+            ->assertJsonPath('data.is_overdue', true);
+
+        $this->assertTrue($assignment->refresh()->isOverdue());
     }
 
     #[Test]

@@ -45,8 +45,11 @@ export class VehicleDetailPage {
   protected readonly showAssignForm = signal(false);
   protected readonly personQuery = signal('');
   protected readonly personResults = signal<PersonOption[]>([]);
+  protected readonly searchingPeople = signal(false);
   protected readonly selectedPerson = signal<PersonOption | null>(null);
   protected readonly assignmentNotes = signal('');
+  protected readonly expectedReturnAt = signal('');
+  protected readonly todayIso = new Date().toISOString().slice(0, 10);
 
   /** Texto del buscador de personas, con retardo para no lanzar una petición por tecla. */
   private readonly personSearch = new Subject<string>();
@@ -60,6 +63,7 @@ export class VehicleDetailPage {
       this.personResults.set([]);
       this.selectedPerson.set(null);
       this.assignmentNotes.set('');
+      this.expectedReturnAt.set('');
 
       this.load(id);
       this.loadAssignment(id);
@@ -69,12 +73,22 @@ export class VehicleDetailPage {
       .pipe(
         debounceTime(300),
         distinctUntilChanged(),
-        switchMap((term) =>
-          term.trim().length < 2 ? of([]) : this.assignments.searchPeople(term).pipe(catchError(() => of([]))),
-        ),
+        switchMap((term) => {
+          if (term.trim().length < 2) {
+            this.searchingPeople.set(false);
+            return of([]);
+          }
+
+          this.searchingPeople.set(true);
+
+          return this.assignments.searchPeople(term).pipe(catchError(() => of([])));
+        }),
         takeUntilDestroyed(),
       )
-      .subscribe((results) => this.personResults.set(results));
+      .subscribe((results) => {
+        this.personResults.set(results);
+        this.searchingPeople.set(false);
+      });
   }
 
   protected onPhotoSelected(input: HTMLInputElement): void {
@@ -171,7 +185,11 @@ export class VehicleDetailPage {
     this.assigning.set(true);
 
     this.assignments
-      .assign(this.id(), { person_id: person.id, notes: this.assignmentNotes().trim() || null })
+      .assign(this.id(), {
+        person_id: person.id,
+        expected_return_at: this.expectedReturnAt() || null,
+        notes: this.assignmentNotes().trim() || null,
+      })
       .subscribe({
         next: (assignment) => {
           this.assignment.set(assignment);
@@ -180,6 +198,7 @@ export class VehicleDetailPage {
           this.personQuery.set('');
           this.selectedPerson.set(null);
           this.assignmentNotes.set('');
+          this.expectedReturnAt.set('');
           this.notifications.success(`Vehículo asignado a ${assignment.person.full_name}.`);
         },
         error: () => this.assigning.set(false),

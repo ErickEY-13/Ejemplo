@@ -33,6 +33,8 @@ class VehicleAssignmentResource extends JsonResource
             ],
             'notes' => $this->notes,
             'assigned_at' => $this->assigned_at->toIso8601String(),
+            'expected_return_at' => $this->expected_return_at?->toDateString(),
+            'is_overdue' => $this->isOverdue(),
         ];
     }
 }

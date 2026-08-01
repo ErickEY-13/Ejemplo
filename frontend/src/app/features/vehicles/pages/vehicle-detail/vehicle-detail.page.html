@@ -156,23 +156,32 @@
     } @else {
       @if (assignment(); as current) {
         <div class="detail-assignment__current">
-          <div>
-            <span class="cell-title">{{ current.person.full_name }}</span>
-            <span class="cell-sub">
-              {{ current.person.document_number }}
-              @if (current.person.site) {
-                · {{ current.person.site }}
-              }
-              @if (current.person.deleted_at) {
-                · (persona eliminada)
-              }
-            </span>
+          <div class="detail-assignment__who">
+            <div>
+              <span class="cell-title">{{ current.person.full_name }}</span>
+              <span class="cell-sub">
+                {{ current.person.document_number }}
+                @if (current.person.site) {
+                  · {{ current.person.site }}
+                }
+                @if (current.person.deleted_at) {
+                  · (persona eliminada)
+                }
+              </span>
+            </div>
+
+            @if (current.is_overdue) {
+              <span class="badge badge--danger">Atrasado</span>
+            }
           </div>
 
           <p class="detail-assignment__meta">
-            Asignado desde {{ current.assigned_at | date: 'mediumDate' }} ({{
+            Se lo llevó el {{ current.assigned_at | date: 'mediumDate' }} ({{
               assignmentDuration(current.assigned_at)
             }})
+            @if (current.expected_return_at) {
+              · devolución prevista el {{ current.expected_return_at | date: 'mediumDate' }}
+            }
           </p>
 
           @if (current.notes) {
@@ -207,6 +216,10 @@
               (input)="onPersonSearch($any($event.target).value)"
             />
 
+            @if (searchingPeople()) {
+              <span class="field__hint">Buscando…</span>
+            }
+
             @if (personResults().length > 0) {
               <ul class="detail-assignment__results">
                 @for (person of personResults(); track person.id) {
@@ -221,6 +234,19 @@
                 }
               </ul>
             }
+          </div>
+
+          <div class="field">
+            <label class="field__label" for="assignment-return">Devolución prevista</label>
+            <input
+              id="assignment-return"
+              class="input"
+              type="date"
+              [min]="todayIso"
+              [value]="expectedReturnAt()"
+              (input)="expectedReturnAt.set($any($event.target).value)"
+            />
+            <span class="field__hint">Opcional: hasta cuándo se lleva el vehículo.</span>
           </div>
 
           <div class="field">

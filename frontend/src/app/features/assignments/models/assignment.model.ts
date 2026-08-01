@@ -7,6 +7,8 @@ export interface VehicleAssignment {
   person: AssignedPerson;
   notes: string | null;
   assigned_at: string;
+  expected_return_at: string | null;
+  is_overdue: boolean;
 }
 
 export interface AssignedPerson {
@@ -29,5 +31,6 @@ export interface PersonOption {
 /** Cuerpo que acepta PUT /api/assignments/{vehicle}. */
 export interface AssignVehiclePayload {
   person_id: number;
+  expected_return_at: string | null;
   notes: string | null;
 }

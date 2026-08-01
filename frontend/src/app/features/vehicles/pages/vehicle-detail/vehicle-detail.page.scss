@@ -151,6 +151,14 @@
     border-bottom: 1px solid var(--c-border);
   }
 
+  &__who {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--sp-2);
+  }
+
   &__meta {
     margin: 0;
     font-size: 0.85rem;

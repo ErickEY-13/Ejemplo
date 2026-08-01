@@ -20,6 +20,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $vehicle_id
  * @property int $person_id
  * @property \Illuminate\Support\Carbon $assigned_at
+ * @property \Illuminate\Support\Carbon|null $expected_return_at
  * @property string|null $notes
  */
 class VehicleAssignment extends Model
@@ -28,6 +29,7 @@ class VehicleAssignment extends Model
         'vehicle_id',
         'person_id',
         'assigned_at',
+        'expected_return_at',
         'notes',
     ];
 
@@ -38,7 +40,16 @@ class VehicleAssignment extends Model
     {
         return [
             'assigned_at' => 'datetime',
+            'expected_return_at' => 'date',
         ];
+    }
+
+    /**
+     * La devolución prevista ya pasó y el vehículo sigue asignado.
+     */
+    public function isOverdue(): bool
+    {
+        return $this->expected_return_at !== null && $this->expected_return_at->isPast();
     }
 
     /**

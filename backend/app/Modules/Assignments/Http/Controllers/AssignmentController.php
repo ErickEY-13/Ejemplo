@@ -51,6 +51,7 @@ class AssignmentController extends Controller
         $assignment = $this->assignments->assign(
             $vehicle,
             (int) $request->validated('person_id'),
+            $request->validated('expected_return_at'),
             $request->validated('notes'),
         );
 

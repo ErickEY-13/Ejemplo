@@ -27,11 +27,16 @@ class AssignmentService
      * Asigna o reasigna el vehículo: reemplaza la asignación anterior si
      * existía (no se guarda historial).
      */
-    public function assign(Vehicle $vehicle, int $personId, ?string $notes): VehicleAssignment
+    public function assign(Vehicle $vehicle, int $personId, ?string $expectedReturnAt, ?string $notes): VehicleAssignment
     {
         return VehicleAssignment::query()->updateOrCreate(
             ['vehicle_id' => $vehicle->id],
-            ['person_id' => $personId, 'assigned_at' => now(), 'notes' => $notes],
+            [
+                'person_id' => $personId,
+                'assigned_at' => now(),
+                'expected_return_at' => $expectedReturnAt,
+                'notes' => $notes,
+            ],
         );
     }
 
