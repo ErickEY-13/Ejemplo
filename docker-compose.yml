@@ -31,10 +31,12 @@ services:
       - "${DB_PORT_HOST:-5432}:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-ejemplo} -d ${DB_DATABASE:-ejemplo}"]
-      interval: 5s
-      timeout: 5s
-      retries: 20
-      start_period: 10s
+      # Intervalo corto: los demás servicios esperan a que esto pase a
+      # "healthy", así que cada segundo aquí es un segundo de arranque.
+      interval: 2s
+      timeout: 3s
+      retries: 30
+      start_period: 5s
     networks:
       - backend
 

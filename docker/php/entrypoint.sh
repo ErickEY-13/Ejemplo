@@ -97,16 +97,34 @@ fi
 
 # ---------------------------------------------------------------------------
 # 6. Cachés del framework
+#
+#    Arrancar Laravel cuesta varios segundos cuando vendor/ está en un bind
+#    mount (Windows y macOS), así que cada `php artisan` de más se nota en el
+#    tiempo de arranque. Por eso aquí se comprueba antes con una prueba de
+#    archivo, que es instantánea, y solo se invoca artisan si hay trabajo real.
 # ---------------------------------------------------------------------------
-as_app php artisan storage:link --no-interaction > /dev/null 2>&1 || true
+if [ ! -L public/storage ] && [ ! -d public/storage ]; then
+    log "Creando el enlace public/storage..."
+    as_app php artisan storage:link --no-interaction > /dev/null 2>&1 || true
+fi
 
 if [ "${APP_ENV:-local}" = "production" ]; then
-    log "Cacheando configuración, rutas y vistas..."
+    log "Cacheando configuración y rutas..."
     as_app php artisan config:cache --no-interaction || true
     as_app php artisan route:cache --no-interaction || true
 else
-    as_app php artisan config:clear --no-interaction > /dev/null 2>&1 || true
-    as_app php artisan route:clear --no-interaction > /dev/null 2>&1 || true
+    # En desarrollo no se cachea nada, así que normalmente no hay qué limpiar.
+    # Solo se limpia si quedó una caché de una sesión anterior: si no, serviría
+    # configuración obsoleta y costaría un arranque de Laravel para nada.
+    if [ -f bootstrap/cache/config.php ]; then
+        log "Limpiando la caché de configuración..."
+        as_app php artisan config:clear --no-interaction > /dev/null 2>&1 || true
+    fi
+
+    if ls bootstrap/cache/routes-*.php > /dev/null 2>&1; then
+        log "Limpiando la caché de rutas..."
+        as_app php artisan route:clear --no-interaction > /dev/null 2>&1 || true
+    fi
 fi
 
 log "Listo. Ejecutando: $*"
