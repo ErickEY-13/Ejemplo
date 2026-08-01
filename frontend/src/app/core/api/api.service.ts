@@ -40,9 +40,19 @@ export class ApiService {
     return this.http.patch<Envelope<T>>(this.url(path), body).pipe(map((response) => response.data));
   }
 
-  /** Los DELETE de la API responden 204 sin cuerpo. */
-  delete(path: string): Observable<void> {
-    return this.http.delete<void>(this.url(path));
+  put<T>(path: string, body: unknown): Observable<T> {
+    return this.http.put<Envelope<T>>(this.url(path), body).pipe(map((response) => response.data));
+  }
+
+  /**
+   * La mayoría de los DELETE de la API responden 204 sin cuerpo, pero
+   * algunos (como quitar la foto de un vehículo) devuelven el recurso
+   * actualizado envuelto en `{ data: ... }`. Cubre ambos casos.
+   */
+  delete<T = void>(path: string): Observable<T> {
+    return this.http
+      .delete<Envelope<T> | null>(this.url(path))
+      .pipe(map((response) => (response ? response.data : (undefined as T))));
   }
 
   private url(path: string): string {

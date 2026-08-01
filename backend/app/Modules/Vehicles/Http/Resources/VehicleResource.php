@@ -33,6 +33,7 @@ class VehicleResource extends JsonResource
             'fuel_type' => $this->fuel_type?->value,
             'fuel_type_label' => $this->fuel_type?->label(),
             'color' => $this->color,
+            'photo_url' => $this->photo_url,
             'vin' => $this->vin,
             'engine_number' => $this->engine_number,
             'mileage' => $this->mileage,

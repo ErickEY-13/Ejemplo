@@ -36,6 +36,8 @@ Vehicles/
 | `PUT\|PATCH` | `/api/vehicles/{id}`           | Actualizar                           |
 | `DELETE`     | `/api/vehicles/{id}`           | Eliminar (borrado lógico)            |
 | `POST`       | `/api/vehicles/{id}/restore`   | Restaurar un registro eliminado      |
+| `POST`       | `/api/vehicles/{id}/photo`     | Subir o reemplazar la foto           |
+| `DELETE`     | `/api/vehicles/{id}/photo`     | Quitar la foto                       |
 
 ### Filtros de `GET /api/vehicles`
 
@@ -52,6 +54,26 @@ Vehicles/
 | `sort`         | string  | `id`, `plate`, `brand`, `model`, `year`, `mileage`, `created_at`   |
 | `direction`    | string  | `asc` \| `desc`                                                    |
 | `per_page`     | int     | 1–100 (por defecto 15)                                             |
+
+## Foto del vehículo
+
+Una sola foto por vehículo, guardada en el disco `public` (ya expuesto vía
+el symlink `public/storage`, sin configuración adicional).
+
+- `POST /api/vehicles/{id}/photo`: campo `photo` (multipart), validado como
+  `image|mimes:jpeg,jpg,png,webp|max:4096` (4 MB). Si ya había una foto,
+  se borra del disco antes de guardar la nueva.
+- `DELETE /api/vehicles/{id}/photo`: borra la foto actual, si existe.
+- Ambos devuelven el vehículo actualizado; `photo_url` es `null` cuando no
+  tiene foto.
+
+## Responsable asignado
+
+Un vehículo puede tener un responsable (persona) asignado. Esa relación no
+vive aquí: la gestiona el módulo `Assignments` (`/api/assignments/{id}`),
+que es el único que conoce tanto a `Vehicle` como a `Person`. Este módulo no
+importa nada de `Assignments` ni de `Persons` — ver
+[`backend/app/Modules/Assignments/README.md`](../Assignments/README.md).
 
 ## Comandos habituales
 

@@ -1,16 +1,24 @@
 <div class="page-header">
-  <div>
+  <div class="page-header__content">
+    <span class="page-header__eyebrow">Gestión de flota</span>
     <h1>Registro de Vehículos</h1>
     <p>Consulta, da de alta y mantén actualizada la flota de vehículos.</p>
   </div>
 
-  <a class="btn btn--primary" routerLink="nuevo">
+  <a class="btn btn--primary page-header__action" routerLink="nuevo">
     <app-icon name="plus" [size]="16" />
     Nuevo vehículo
   </a>
 </div>
 
-<section class="card">
+<section class="card filters-card">
+  <div class="filters-card__header">
+    <div>
+      <h2>Buscar y filtrar</h2>
+      <p>Encuentra vehículos por placa, marca, estado o año en segundos.</p>
+    </div>
+  </div>
+
   <form class="filters" (submit)="$event.preventDefault()">
     <div class="field filters__search">
       <label class="field__label" for="vehicle-search">Buscar</label>
@@ -240,6 +248,10 @@
                       Restaurar
                     </button>
                   } @else {
+                    <a class="btn btn--ghost btn--sm" [routerLink]="[vehicle.id]">
+                      <app-icon name="eye" [size]="15" />
+                      Ver
+                    </a>
                     <a class="btn btn--ghost btn--sm" [routerLink]="[vehicle.id, 'editar']">
                       <app-icon name="pencil" [size]="15" />
                       Editar

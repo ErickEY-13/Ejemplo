@@ -30,6 +30,11 @@
       </div>
     }
 
+    <div class="form__intro">
+      <div class="form__intro-badge">Ficha completa</div>
+      <p>Completa los datos principales y deja la información lista para su consulta y mantenimiento.</p>
+    </div>
+
     <fieldset class="form__section">
       <legend class="form__legend">Identificación</legend>
 
@@ -153,6 +158,19 @@
           <label class="field__label" for="address">Dirección</label>
           <input id="address" class="input" type="text" formControlName="address" />
           @if (errorFor('address', 'la dirección'); as message) {
+            <span class="field__error">{{ message }}</span>
+          }
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="site">Sede</label>
+          <input id="site" class="input" type="text" formControlName="site" list="person-sites" />
+          <datalist id="person-sites">
+            @for (site of metadata()?.sites ?? []; track site) {
+              <option [value]="site"></option>
+            }
+          </datalist>
+          @if (errorFor('site', 'la sede'); as message) {
             <span class="field__error">{{ message }}</span>
           }
         </div>

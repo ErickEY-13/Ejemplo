@@ -66,6 +66,7 @@ abstract class PersonRequest extends FormRequest
             ],
             'phone' => ['nullable', 'string', 'max:30', 'regex:/^[0-9+\-\s()]+$/'],
             'address' => ['nullable', 'string', 'max:255'],
+            'site' => ['nullable', 'string', 'max:100'],
             'is_active' => ['sometimes', 'boolean'],
             'notes' => ['nullable', 'string', 'max:2000'],
         ];
@@ -86,6 +87,7 @@ abstract class PersonRequest extends FormRequest
             'email' => 'correo electrónico',
             'phone' => 'teléfono',
             'address' => 'dirección',
+            'site' => 'sede',
             'is_active' => 'estado',
             'notes' => 'observaciones',
         ];

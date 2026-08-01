@@ -36,6 +36,7 @@ class PersonResource extends JsonResource
             'email' => $this->email,
             'phone' => $this->phone,
             'address' => $this->address,
+            'site' => $this->site,
             'is_active' => $this->is_active,
             'notes' => $this->notes,
             'deleted_at' => $this->deleted_at?->toIso8601String(),

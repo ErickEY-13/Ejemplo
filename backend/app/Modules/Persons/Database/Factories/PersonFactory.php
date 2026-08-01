@@ -17,6 +17,17 @@ class PersonFactory extends Factory
     protected $model = Person::class;
 
     /**
+     * @var list<string>
+     */
+    private const SITES = [
+        'Obras Públicas',
+        'Parques y Jardines',
+        'Tránsito',
+        'Aseo y Ornato',
+        'Alcaldía',
+    ];
+
+    /**
      * @return array<string, mixed>
      */
     public function definition(): array
@@ -31,6 +42,7 @@ class PersonFactory extends Factory
             'email' => fake()->unique()->safeEmail(),
             'phone' => fake()->numerify('9########'),
             'address' => fake()->address(),
+            'site' => fake()->randomElement(self::SITES),
             'is_active' => true,
             'notes' => null,
         ];

@@ -144,7 +144,8 @@ del sistema es editar un puñado de valores en un único archivo.
 │   ├── app/
 │   │   ├── Modules/            # ◄── Un módulo por dominio de negocio
 │   │   │   ├── Persons/
-│   │   │   └── Vehicles/
+│   │   │   ├── Vehicles/
+│   │   │   └── Assignments/    #     Puente Personas ↔ Vehículos (ver más abajo)
 │   │   ├── Providers/          # Autodescubrimiento de módulos
 │   │   └── Support/Module/     # Clase base de los módulos
 │   ├── config/modules.php      # Metadatos de los módulos
@@ -158,7 +159,8 @@ del sistema es editar un puñado de valores en un único archivo.
 │       └── features/           # ◄── Un módulo por dominio de negocio
 │           ├── home/           #     Menú principal
 │           ├── persons/
-│           └── vehicles/
+│           ├── vehicles/
+│           └── assignments/    #     Puente Personas ↔ Vehículos (sin páginas propias)
 │
 ├── docker/
 │   ├── nginx/                  # Config de desarrollo y de producción
@@ -339,6 +341,12 @@ El reparto está pensado para que dos personas trabajen en paralelo sin pisarse:
 | Desarrollador 1 | `app/Modules/Persons/`   | `src/app/features/persons/`  |
 | Desarrollador 2 | `app/Modules/Vehicles/`  | `src/app/features/vehicles/` |
 
+`app/Modules/Assignments/` (backend) y `src/app/features/assignments/`
+(frontend) son un caso aparte: es el módulo que vincula un vehículo con su
+responsable, así que necesariamente conoce a los otros dos. No pertenece a
+ninguno de los dos desarrolladores en particular — se acuerda entre ambos
+cuando haya que tocarlo, igual que el resto de lo compartido.
+
 **Archivos compartidos** (avisar antes de tocarlos):
 
 - `backend/routes/api.php`, `backend/config/modules.php`
@@ -391,6 +399,27 @@ uno está en el README de su módulo:
 
 Los borrados son **lógicos** (`deleted_at`): nada se pierde y todo se puede
 restaurar.
+
+Vehículos además expone la foto del vehículo (una sola, subir/reemplazar/
+quitar); ver el detalle en el README del módulo:
+
+| Método   | Ruta                      |
+| -------- | ------------------------- |
+| `POST`   | `/vehicles/{id}/photo`    |
+| `DELETE` | `/vehicles/{id}/photo`    |
+
+### Assignments (responsable asignado)
+
+Vincula un vehículo con la persona responsable. Vive en su propio módulo
+porque es el único punto donde Personas y Vehículos se relacionan — ver
+[`backend/app/Modules/Assignments/README.md`](backend/app/Modules/Assignments/README.md).
+
+| Método       | Ruta                        |
+| ------------ | --------------------------- |
+| `GET`        | `/assignments/people`       |
+| `GET`        | `/assignments/{vehicle_id}` |
+| `PUT\|PATCH` | `/assignments/{vehicle_id}` |
+| `DELETE`     | `/assignments/{vehicle_id}` |
 
 ---
 

@@ -7,6 +7,8 @@ namespace App\Modules\Vehicles\Services;
 use App\Modules\Vehicles\Models\Vehicle;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * Lógica de negocio del módulo de Vehículos.
@@ -55,6 +57,39 @@ class VehicleService
         $vehicle->restore();
 
         return $vehicle->refresh();
+    }
+
+    /**
+     * Guarda la foto en el disco `public` y reemplaza la anterior si existía.
+     */
+    public function updatePhoto(Vehicle $vehicle, UploadedFile $file): Vehicle
+    {
+        $this->deleteStoredPhoto($vehicle);
+
+        $vehicle->photo_path = $file->store('vehicles', 'public');
+        $vehicle->save();
+
+        return $vehicle->refresh();
+    }
+
+    /**
+     * Borra la foto actual del vehículo, si tiene.
+     */
+    public function deletePhoto(Vehicle $vehicle): Vehicle
+    {
+        $this->deleteStoredPhoto($vehicle);
+
+        $vehicle->photo_path = null;
+        $vehicle->save();
+
+        return $vehicle->refresh();
+    }
+
+    private function deleteStoredPhoto(Vehicle $vehicle): void
+    {
+        if ($vehicle->photo_path !== null) {
+            Storage::disk('public')->delete($vehicle->photo_path);
+        }
     }
 
     /**

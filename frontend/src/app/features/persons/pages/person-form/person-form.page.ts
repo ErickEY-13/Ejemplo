@@ -53,6 +53,7 @@ export class PersonFormPage {
     email: ['', [Validators.email, Validators.maxLength(150)]],
     phone: ['', [Validators.maxLength(30)]],
     address: ['', [Validators.maxLength(255)]],
+    site: ['', [Validators.maxLength(100)]],
     is_active: [true],
     notes: ['', [Validators.maxLength(2000)]],
   });
@@ -80,6 +81,7 @@ export class PersonFormPage {
             email: person.email ?? '',
             phone: person.phone ?? '',
             address: person.address ?? '',
+            site: person.site ?? '',
             is_active: person.is_active,
             notes: person.notes ?? '',
           });
@@ -142,6 +144,7 @@ export class PersonFormPage {
       email: blankToNull(value.email),
       phone: blankToNull(value.phone),
       address: blankToNull(value.address),
+      site: blankToNull(value.site),
       is_active: value.is_active,
       notes: blankToNull(value.notes),
     };

@@ -16,6 +16,7 @@ export interface Vehicle {
   fuel_type: string;
   fuel_type_label: string;
   color: string | null;
+  photo_url: string | null;
   vin: string | null;
   engine_number: string | null;
   mileage: number;

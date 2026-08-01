@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * @property int $id
@@ -22,6 +23,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property VehicleType $type
  * @property FuelType $fuel_type
  * @property string|null $color
+ * @property string|null $photo_path
  * @property string|null $vin
  * @property string|null $engine_number
  * @property int $mileage
@@ -43,6 +45,7 @@ class Vehicle extends Model
         'type',
         'fuel_type',
         'color',
+        'photo_path',
         'vin',
         'engine_number',
         'mileage',
@@ -105,6 +108,18 @@ class Vehicle extends Model
     protected function description(): Attribute
     {
         return Attribute::get(fn (): string => trim("{$this->brand} {$this->model} ({$this->year})"));
+    }
+
+    /**
+     * URL pública de la foto, o `null` si el vehículo no tiene.
+     */
+    protected function photoUrl(): Attribute
+    {
+        return Attribute::get(
+            fn (): ?string => $this->photo_path !== null
+                ? Storage::disk('public')->url($this->photo_path)
+                : null
+        );
     }
 
     // ------------------------------------------------------------- Scopes

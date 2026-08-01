@@ -41,4 +41,15 @@ export class VehicleService {
   restore(id: number | string): Observable<Vehicle> {
     return this.api.post<Vehicle>(`${this.resource}/${id}/restore`, {});
   }
+
+  uploadPhoto(id: number | string, photo: File): Observable<Vehicle> {
+    const formData = new FormData();
+    formData.append('photo', photo);
+
+    return this.api.post<Vehicle>(`${this.resource}/${id}/photo`, formData);
+  }
+
+  deletePhoto(id: number | string): Observable<Vehicle> {
+    return this.api.delete<Vehicle>(`${this.resource}/${id}/photo`);
+  }
 }

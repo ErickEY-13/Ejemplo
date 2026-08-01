@@ -1,0 +1,255 @@
+<div class="page-header">
+  <div>
+    <h1>{{ vehicle()?.description ?? 'Detalle del vehículo' }}</h1>
+    <p>Consulta la información completa del vehículo registrado.</p>
+  </div>
+
+  <a class="btn btn--ghost" routerLink="/vehiculos">
+    <app-icon name="arrow-left" [size]="16" />
+    Volver al listado
+  </a>
+</div>
+
+@if (loading()) {
+  <div class="card">
+    <app-spinner label="Cargando vehículo…" />
+  </div>
+} @else if (vehicle(); as vehicle) {
+  <div class="detail-grid">
+    <section class="card detail-photo">
+      @if (vehicle.photo_url) {
+        <img class="detail-photo__img" [src]="vehicle.photo_url" [alt]="'Foto de ' + vehicle.plate" />
+      } @else {
+        <div class="detail-photo__placeholder">
+          <app-icon name="car" [size]="48" />
+          <span>Sin foto</span>
+        </div>
+      }
+
+      <input
+        #photoInput
+        type="file"
+        class="visually-hidden"
+        accept="image/jpeg,image/png,image/webp"
+        (change)="onPhotoSelected(photoInput)"
+      />
+
+      <div class="detail-photo__actions">
+        <button
+          type="button"
+          class="btn btn--ghost btn--sm"
+          [disabled]="uploadingPhoto()"
+          (click)="photoInput.click()"
+        >
+          <app-icon name="plus" [size]="14" />
+          {{ uploadingPhoto() ? 'Subiendo…' : vehicle.photo_url ? 'Reemplazar foto' : 'Subir foto' }}
+        </button>
+
+        @if (vehicle.photo_url) {
+          <button type="button" class="btn btn--ghost btn--sm" (click)="removePhoto()">
+            <app-icon name="trash" [size]="14" />
+            Quitar foto
+          </button>
+        }
+      </div>
+
+      <p class="detail-photo__hint">JPG, PNG o WEBP. Máximo 4 MB.</p>
+    </section>
+
+    <section class="card detail-info">
+      <div class="detail-info__headline">
+        <span class="detail-info__eyebrow">Ficha del vehículo</span>
+        <h2 class="detail-info__title">{{ vehicle.brand }} {{ vehicle.model }}</h2>
+        <p class="detail-info__subtitle">{{ vehicle.plate }} · {{ vehicle.type_label }}</p>
+      </div>
+
+      <div class="detail-info__status">
+        @if (vehicle.deleted_at) {
+          <span class="badge badge--warning">Eliminado</span>
+        } @else if (vehicle.is_active) {
+          <span class="badge badge--success">Activo</span>
+        } @else {
+          <span class="badge">Inactivo</span>
+        }
+      </div>
+
+      <dl class="detail-list">
+        <div>
+          <dt>Placa</dt>
+          <dd><span class="plate">{{ vehicle.plate }}</span></dd>
+        </div>
+        <div>
+          <dt>Marca</dt>
+          <dd>{{ vehicle.brand }}</dd>
+        </div>
+        <div>
+          <dt>Modelo</dt>
+          <dd>{{ vehicle.model }}</dd>
+        </div>
+        <div>
+          <dt>Año</dt>
+          <dd>{{ vehicle.year }}</dd>
+        </div>
+        <div>
+          <dt>Tipo</dt>
+          <dd>{{ vehicle.type_label }}</dd>
+        </div>
+        <div>
+          <dt>Combustible</dt>
+          <dd>{{ vehicle.fuel_type_label }}</dd>
+        </div>
+        <div>
+          <dt>Color</dt>
+          <dd>{{ vehicle.color ?? '—' }}</dd>
+        </div>
+        <div>
+          <dt>Número de chasis (VIN)</dt>
+          <dd>{{ vehicle.vin ?? '—' }}</dd>
+        </div>
+        <div>
+          <dt>Número de motor</dt>
+          <dd>{{ vehicle.engine_number ?? '—' }}</dd>
+        </div>
+        <div>
+          <dt>Kilometraje</dt>
+          <dd>{{ vehicle.mileage.toLocaleString('es') }} km</dd>
+        </div>
+        <div class="detail-list__full">
+          <dt>Observaciones</dt>
+          <dd>{{ vehicle.notes ?? 'Sin observaciones.' }}</dd>
+        </div>
+        <div>
+          <dt>Creado</dt>
+          <dd>{{ vehicle.created_at | date: 'medium' }}</dd>
+        </div>
+        <div>
+          <dt>Última actualización</dt>
+          <dd>{{ vehicle.updated_at | date: 'medium' }}</dd>
+        </div>
+      </dl>
+
+      <div class="detail-actions">
+        @if (vehicle.deleted_at) {
+          <button type="button" class="btn btn--ghost" (click)="restore(vehicle)">
+            <app-icon name="restore" [size]="16" />
+            Restaurar
+          </button>
+        } @else {
+          <a class="btn btn--ghost" [routerLink]="['/vehiculos', vehicle.id, 'editar']">
+            <app-icon name="pencil" [size]="16" />
+            Editar
+          </a>
+          <button type="button" class="btn btn--danger" (click)="remove(vehicle)">
+            <app-icon name="trash" [size]="16" />
+            Eliminar
+          </button>
+        }
+      </div>
+    </section>
+  </div>
+
+  <section class="card detail-assignment">
+    <h2 class="detail-assignment__title">Responsable asignado</h2>
+
+    @if (assignmentLoading()) {
+      <app-spinner label="Cargando asignación…" />
+    } @else {
+      @if (assignment(); as current) {
+        <div class="detail-assignment__current">
+          <div>
+            <span class="cell-title">{{ current.person.full_name }}</span>
+            <span class="cell-sub">
+              {{ current.person.document_number }}
+              @if (current.person.site) {
+                · {{ current.person.site }}
+              }
+              @if (current.person.deleted_at) {
+                · (persona eliminada)
+              }
+            </span>
+          </div>
+
+          <p class="detail-assignment__meta">
+            Asignado desde {{ current.assigned_at | date: 'mediumDate' }} ({{
+              assignmentDuration(current.assigned_at)
+            }})
+          </p>
+
+          @if (current.notes) {
+            <p class="detail-assignment__notes">{{ current.notes }}</p>
+          }
+
+          <div class="detail-assignment__actions">
+            @if (!showAssignForm()) {
+              <button type="button" class="btn btn--ghost btn--sm" (click)="showAssignForm.set(true)">
+                <app-icon name="pencil" [size]="14" />
+                Reasignar
+              </button>
+              <button type="button" class="btn btn--ghost btn--sm" (click)="unassign()">
+                <app-icon name="trash" [size]="14" />
+                Quitar asignación
+              </button>
+            }
+          </div>
+        </div>
+      }
+
+      @if (!assignment() || showAssignForm()) {
+        <div class="detail-assignment__form">
+          <div class="field">
+            <label class="field__label" for="assignment-person">Buscar persona</label>
+            <input
+              id="assignment-person"
+              class="input"
+              type="search"
+              placeholder="Nombre o documento…"
+              [value]="personQuery()"
+              (input)="onPersonSearch($any($event.target).value)"
+            />
+
+            @if (personResults().length > 0) {
+              <ul class="detail-assignment__results">
+                @for (person of personResults(); track person.id) {
+                  <li>
+                    <button type="button" class="detail-assignment__result" (click)="selectPerson(person)">
+                      <span class="cell-title">{{ person.full_name }}</span>
+                      <span class="cell-sub"
+                        >{{ person.document_number }}{{ person.site ? ' · ' + person.site : '' }}</span
+                      >
+                    </button>
+                  </li>
+                }
+              </ul>
+            }
+          </div>
+
+          <div class="field">
+            <label class="field__label" for="assignment-notes">Observaciones</label>
+            <textarea
+              id="assignment-notes"
+              class="textarea"
+              [value]="assignmentNotes()"
+              (input)="assignmentNotes.set($any($event.target).value)"
+            ></textarea>
+          </div>
+
+          <div class="detail-assignment__form-actions">
+            @if (assignment()) {
+              <button type="button" class="btn btn--ghost btn--sm" (click)="showAssignForm.set(false)">
+                Cancelar
+              </button>
+            }
+            <button
+              type="button"
+              class="btn btn--primary btn--sm"
+              [disabled]="!selectedPerson() || assigning()"
+              (click)="assign()"
+            >
+              {{ assigning() ? 'Guardando…' : assignment() ? 'Reasignar' : 'Asignar' }}
+            </button>
+          </div>
+        </div>
+      }
+    }
+  </section>
+}

@@ -27,3 +27,6 @@ Route::delete('{vehicle}', [VehicleController::class, 'destroy'])->name('destroy
 Route::post('{vehicle}/restore', [VehicleController::class, 'restore'])
     ->withTrashed()
     ->name('restore');
+
+Route::post('{vehicle}/photo', [VehicleController::class, 'uploadPhoto'])->name('photo.store');
+Route::delete('{vehicle}/photo', [VehicleController::class, 'destroyPhoto'])->name('photo.destroy');

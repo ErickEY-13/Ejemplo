@@ -42,6 +42,7 @@ class PersonController extends Controller
             'data' => [
                 'document_types' => DocumentType::options(),
                 'genders' => Gender::options(),
+                'sites' => $this->persons->sites(),
                 'sortable' => IndexPersonRequest::SORTABLE,
             ],
         ]);

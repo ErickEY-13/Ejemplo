@@ -1,16 +1,24 @@
 <div class="page-header">
-  <div>
+  <div class="page-header__content">
+    <span class="page-header__eyebrow">Gestión de personas</span>
     <h1>Registro de Personas</h1>
     <p>Consulta, da de alta y mantén actualizados los datos de las personas.</p>
   </div>
 
-  <a class="btn btn--primary" routerLink="nueva">
+  <a class="btn btn--primary page-header__action" routerLink="nueva">
     <app-icon name="plus" [size]="16" />
     Nueva persona
   </a>
 </div>
 
-<section class="card">
+<section class="card filters-card">
+  <div class="filters-card__header">
+    <div>
+      <h2>Buscar y filtrar</h2>
+      <p>Encuentra personas por nombre, documento, estado o contacto en segundos.</p>
+    </div>
+  </div>
+
   <form class="filters" (submit)="$event.preventDefault()">
     <div class="field filters__search">
       <label class="field__label" for="person-search">Buscar</label>
@@ -159,7 +167,7 @@
             <tr [class.is-trashed]="person.deleted_at">
               <td>
                 <span class="cell-title">{{ person.full_name }}</span>
-                <span class="cell-sub">{{ person.gender_label }}</span>
+                <span class="cell-sub">{{ person.gender_label }}{{ person.site ? ' · ' + person.site : '' }}</span>
               </td>
               <td>
                 <span class="cell-title">{{ person.document_number }}</span>

@@ -10,6 +10,7 @@ use App\Modules\Vehicles\Enums\VehicleType;
 use App\Modules\Vehicles\Http\Requests\IndexVehicleRequest;
 use App\Modules\Vehicles\Http\Requests\StoreVehicleRequest;
 use App\Modules\Vehicles\Http\Requests\UpdateVehicleRequest;
+use App\Modules\Vehicles\Http\Requests\UploadVehiclePhotoRequest;
 use App\Modules\Vehicles\Http\Resources\VehicleResource;
 use App\Modules\Vehicles\Models\Vehicle;
 use App\Modules\Vehicles\Services\VehicleService;
@@ -98,6 +99,28 @@ class VehicleController extends Controller
     {
         return VehicleResource::make(
             $this->vehicles->restore($vehicle)
+        );
+    }
+
+    /**
+     * POST /api/vehicles/{vehicle}/photo
+     *
+     * Sube o reemplaza la foto del vehículo.
+     */
+    public function uploadPhoto(UploadVehiclePhotoRequest $request, Vehicle $vehicle): VehicleResource
+    {
+        return VehicleResource::make(
+            $this->vehicles->updatePhoto($vehicle, $request->file('photo'))
+        );
+    }
+
+    /**
+     * DELETE /api/vehicles/{vehicle}/photo
+     */
+    public function destroyPhoto(Vehicle $vehicle): VehicleResource
+    {
+        return VehicleResource::make(
+            $this->vehicles->deletePhoto($vehicle)
         );
     }
 }

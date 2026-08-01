@@ -24,6 +24,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property string|null $email
  * @property string|null $phone
  * @property string|null $address
+ * @property string|null $site
  * @property bool $is_active
  * @property string|null $notes
  */
@@ -46,6 +47,7 @@ class Person extends Model
         'email',
         'phone',
         'address',
+        'site',
         'is_active',
         'notes',
     ];

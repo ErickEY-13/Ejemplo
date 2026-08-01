@@ -49,6 +49,16 @@ Persons/
 | `direction`     | string  | `asc` \| `desc`                                                   |
 | `per_page`      | int     | 1–100 (por defecto 15)                                            |
 
+## Campo `site` (sede)
+
+Sede u oficina a la que pertenece la persona (texto libre, pensado para una
+municipalidad con varios sectores). `GET /api/persons/metadata` expone
+`sites`: las sedes ya usadas, para sugerirlas en el formulario.
+
+Lo usa el módulo `Assignments` para mostrar de qué sede es el responsable
+asignado a un vehículo — Personas no sabe nada de esa relación, solo expone
+el dato.
+
 ## Comandos habituales
 
 ```bash

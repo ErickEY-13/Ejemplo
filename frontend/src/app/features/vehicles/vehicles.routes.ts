@@ -25,4 +25,10 @@ export const VEHICLES_ROUTES: Routes = [
     loadComponent: () =>
       import('./pages/vehicle-form/vehicle-form.page').then((m) => m.VehicleFormPage),
   },
+  {
+    path: ':id',
+    title: 'Detalle del vehículo',
+    loadComponent: () =>
+      import('./pages/vehicle-detail/vehicle-detail.page').then((m) => m.VehicleDetailPage),
+  },
 ];

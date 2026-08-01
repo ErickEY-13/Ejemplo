@@ -11,6 +11,7 @@ export type IconName =
   | 'car'
   | 'search'
   | 'plus'
+  | 'eye'
   | 'pencil'
   | 'trash'
   | 'restore'
@@ -85,6 +86,10 @@ export type IconName =
         @case ('plus') {
           <path d="M12 5.2v13.6" />
           <path d="M5.2 12h13.6" />
+        }
+        @case ('eye') {
+          <path d="M2.8 12S6.4 5.6 12 5.6 21.2 12 21.2 12 17.6 18.4 12 18.4 2.8 12 2.8 12Z" />
+          <circle cx="12" cy="12" r="2.8" />
         }
         @case ('pencil') {
           <path d="M4 20h4.2L19.3 8.9a2.2 2.2 0 0 0-3.1-3.1L5.1 16.9 4 20Z" />

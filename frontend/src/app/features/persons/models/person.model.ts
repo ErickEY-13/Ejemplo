@@ -19,6 +19,7 @@ export interface Person {
   email: string | null;
   phone: string | null;
   address: string | null;
+  site: string | null;
   is_active: boolean;
   notes: string | null;
   deleted_at: string | null;
@@ -37,6 +38,7 @@ export interface PersonPayload {
   email: string | null;
   phone: string | null;
   address: string | null;
+  site: string | null;
   is_active: boolean;
   notes: string | null;
 }
@@ -57,6 +59,7 @@ export interface PersonFilters {
 export interface PersonMetadata {
   document_types: SelectOption[];
   genders: SelectOption[];
+  sites: string[];
   sortable: string[];
 }
 

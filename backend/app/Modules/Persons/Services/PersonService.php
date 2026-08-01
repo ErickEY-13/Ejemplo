@@ -58,6 +58,22 @@ class PersonService
     }
 
     /**
+     * Sedes registradas, para poblar el formulario (datalist).
+     *
+     * @return list<string>
+     */
+    public function sites(): array
+    {
+        return Person::query()
+            ->whereNotNull('site')
+            ->select('site')
+            ->distinct()
+            ->orderBy('site')
+            ->pluck('site')
+            ->all();
+    }
+
+    /**
      * @param  array<string, mixed>  $filters
      * @return Builder<Person>
      */
