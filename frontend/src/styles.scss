@@ -270,6 +270,13 @@ a {
   }
 }
 
+.select {
+  padding-right: 2rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
 .textarea {
   min-height: 90px;
   resize: vertical;
@@ -361,6 +368,13 @@ a {
 
   .cell-actions {
     text-align: right;
+    white-space: nowrap;
+  }
+
+  .row-actions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: flex-end;
   }
 }
 

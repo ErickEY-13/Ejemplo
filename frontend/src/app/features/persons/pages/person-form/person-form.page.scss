@@ -1,31 +1,96 @@
+/* ====================================================================
+   Formulario de persona — estilos
+   ==================================================================== */
+
+/* ------------------------------------------- Foto de perfil */
+.photo-section {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  margin-bottom: var(--sp-4);
+  padding: var(--sp-4);
+  border: 1px solid rgba(37, 99, 235, 0.12);
+  border-radius: var(--radius);
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.04), rgba(255, 255, 255, 0.95));
+}
+
+.photo-avatar {
+  position: relative;
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  overflow: hidden;
+  cursor: pointer;
+  flex-shrink: 0;
+  background: linear-gradient(135deg, #6366f1 0%, #3b82f6 50%, #06b6d4 100%);
+  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.25);
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+
+  &:hover {
+    box-shadow: 0 6px 24px rgba(99, 102, 241, 0.35);
+    transform: scale(1.03);
+  }
+
+  &__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  &__initials {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    font-size: 2rem;
+    font-weight: 700;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  &__overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.45);
+    color: #fff;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+
+  &:hover &__overlay {
+    opacity: 1;
+  }
+}
+
+.photo-section__info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.photo-section__title {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.photo-section__hint {
+  color: var(--c-text-muted);
+  font-size: 0.8rem;
+}
+
+.photo-section__remove {
+  margin-top: 0.25rem;
+  color: var(--c-danger);
+}
+
+/* ------------------------------------------- Formulario */
 .form {
   padding: var(--sp-5);
-
-  &__intro {
-    margin-bottom: var(--sp-4);
-    padding: var(--sp-4);
-    border: 1px solid rgba(37, 99, 235, 0.12);
-    border-radius: var(--radius);
-    background: linear-gradient(135deg, rgba(37, 99, 235, 0.04), rgba(255, 255, 255, 0.95));
-  }
-
-  &__intro-badge {
-    display: inline-flex;
-    margin-bottom: var(--sp-2);
-    padding: 0.25rem 0.6rem;
-    border-radius: 999px;
-    background: var(--c-primary-soft);
-    color: var(--c-primary-dark);
-    font-size: 0.72rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-  }
-
-  &__intro p {
-    margin: 0;
-    color: var(--c-text-muted);
-  }
 
   &__section {
     margin: 0 0 var(--sp-4);
@@ -39,7 +104,16 @@
     }
   }
 
+  &__section-hint {
+    margin: 0 0 var(--sp-3);
+    color: var(--c-text-muted);
+    font-size: 0.85rem;
+  }
+
   &__legend {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
     padding: 0 0 var(--sp-3);
     font-size: 0.8rem;
     font-weight: 700;
@@ -67,6 +141,114 @@
   }
 }
 
+/* ------------------------------------------- Contacto de emergencia */
+.emergency-grid {
+  margin-top: var(--sp-3);
+  padding-top: var(--sp-3);
+  border-top: 1px dashed var(--c-border);
+}
+
+.emergency-header {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--c-warning-dark, #b45309);
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ------------------------------------------- Documentos adjuntos */
+.doc-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-3);
+}
+
+.doc-card {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-2) var(--sp-3);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-sm);
+  background: var(--c-surface);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    border-color: rgba(37, 99, 235, 0.3);
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.08);
+  }
+
+  &__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-sm);
+    background: var(--c-primary-soft);
+    color: var(--c-primary);
+    flex-shrink: 0;
+  }
+
+  &__info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__name {
+    font-weight: 500;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__meta {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+    color: var(--c-text-muted);
+    font-size: 0.78rem;
+  }
+
+  &__actions {
+    display: flex;
+    gap: 0.25rem;
+    flex-shrink: 0;
+  }
+}
+
+.doc-upload {
+  &__row {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+  }
+
+  &__type {
+    max-width: 200px;
+  }
+}
+
+/* ------------------------------------------- Badge sutil */
+.badge--subtle {
+  padding: 0.15rem 0.45rem;
+  border-radius: 999px;
+  background: rgba(37, 99, 235, 0.08);
+  color: var(--c-primary-dark);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+
+/* ------------------------------------------- Alertas */
 .alert {
   display: flex;
   align-items: flex-start;
@@ -86,5 +268,146 @@
   ul {
     margin: var(--sp-2) 0 0;
     padding-left: var(--sp-5);
+  }
+}
+
+/* ------------------------------------------- Timeline (Auditoría) */
+.timeline {
+  display: flex;
+  flex-direction: column;
+  padding-left: 10px;
+
+  &__item {
+    position: relative;
+    padding-left: 28px;
+    padding-bottom: 20px;
+    
+    &:not(:last-child)::before {
+      content: '';
+      position: absolute;
+      left: 11px;
+      top: 24px;
+      bottom: 0;
+      width: 2px;
+      background: var(--c-border);
+    }
+  }
+
+  &__icon {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--c-surface);
+    border: 2px solid var(--c-border);
+    color: var(--c-text-muted);
+
+    &--created {
+      border-color: #10b981;
+      color: #10b981;
+      background: #ecfdf5;
+    }
+    
+    &--updated {
+      border-color: #3b82f6;
+      color: #3b82f6;
+      background: #eff6ff;
+    }
+    
+    &--deleted {
+      border-color: #ef4444;
+      color: #ef4444;
+      background: #fef2f2;
+    }
+  }
+
+  &__content {
+    background: rgba(255, 255, 255, 0.6);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+    overflow: hidden;
+    word-break: break-word;
+  }
+
+  &__header {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    font-size: 0.85rem;
+    
+    strong {
+      color: var(--c-text);
+    }
+  }
+
+  &__event-name {
+    color: var(--c-text-muted);
+  }
+
+  &__date {
+    margin-left: auto;
+    color: var(--c-text-subtle);
+    font-size: 0.75rem;
+  }
+
+  &__changes {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px dashed var(--c-border);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  &__change {
+    font-size: 0.8rem;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    overflow-wrap: break-word;
+    word-break: break-all;
+  }
+
+  &__field {
+    color: var(--c-primary-dark);
+    font-weight: 600;
+  }
+
+  &__old {
+    color: var(--c-danger);
+    text-decoration: line-through;
+  }
+
+  &__new {
+    color: var(--c-success-dark);
+    font-weight: 600;
+  }
+
+  &__empty {
+    color: var(--c-text-muted);
+    font-size: 0.9rem;
+    font-style: italic;
+  }
+}
+
+/* ------------------------------------------- Responsive */
+@media (max-width: 600px) {
+  .photo-section {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .doc-upload__row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .doc-upload__type {
+    max-width: 100%;
   }
 }

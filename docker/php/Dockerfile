@@ -13,7 +13,7 @@ ENV COMPOSER_ALLOW_SUPERUSER=1 \
     COMPOSER_MEMORY_LIMIT=-1 \
     COMPOSER_HOME=/tmp/composer
 
-# Dependencias de sistema + extensiones PHP requeridas por Laravel/PostgreSQL
+# Dependencias de sistema + extensiones PHP requeridas por Laravel/PostgreSQL y Spatie
 RUN apk add --no-cache \
         bash \
         curl \
@@ -27,6 +27,9 @@ RUN apk add --no-cache \
         libzip \
         icu-libs \
         oniguruma \
+        libpng \
+        libjpeg-turbo \
+        freetype \
     && apk add --no-cache --virtual .build-deps \
         $PHPIZE_DEPS \
         postgresql-dev \
@@ -34,6 +37,10 @@ RUN apk add --no-cache \
         icu-dev \
         oniguruma-dev \
         linux-headers \
+        libpng-dev \
+        libjpeg-turbo-dev \
+        freetype-dev \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install -j"$(nproc)" \
         pdo \
         pdo_pgsql \
@@ -44,6 +51,8 @@ RUN apk add --no-cache \
         opcache \
         pcntl \
         sockets \
+        exif \
+        gd \
     && apk del .build-deps \
     && rm -rf /tmp/pear
 

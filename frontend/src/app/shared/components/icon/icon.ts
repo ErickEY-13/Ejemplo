@@ -25,7 +25,17 @@ export type IconName =
   | 'alert-circle'
   | 'info-circle'
   | 'alert-triangle'
-  | 'close';
+  | 'close'
+  | 'camera'
+  | 'upload'
+  | 'file'
+  | 'download'
+  | 'briefcase'
+  | 'map-pin'
+  | 'phone'
+  | 'heart'
+  | 'history'
+  | 'file-text';
 
 /**
  * Iconos vectoriales dibujados a mano, sin librerías externas.
@@ -148,6 +158,50 @@ export type IconName =
         @case ('close') {
           <path d="m6.4 6.4 11.2 11.2" />
           <path d="M17.6 6.4 6.4 17.6" />
+        }
+        @case ('camera') {
+          <path d="M4.4 8.6h1.2l1.6-2.2h9.6l1.6 2.2h1.2A1.6 1.6 0 0 1 21.2 10.2v7.6a1.6 1.6 0 0 1-1.6 1.6H4.4a1.6 1.6 0 0 1-1.6-1.6v-7.6A1.6 1.6 0 0 1 4.4 8.6Z" />
+          <circle cx="12" cy="13.6" r="3.2" />
+        }
+        @case ('upload') {
+          <path d="M12 15.6V5.2" />
+          <path d="m7.6 9.6 4.4-4.4 4.4 4.4" />
+          <path d="M20.4 15.6v2.4a1.6 1.6 0 0 1-1.6 1.6H5.2A1.6 1.6 0 0 1 3.6 18v-2.4" />
+        }
+        @case ('file') {
+          <path d="M13.6 3.6H7.2A1.6 1.6 0 0 0 5.6 5.2v13.6a1.6 1.6 0 0 0 1.6 1.6h9.6a1.6 1.6 0 0 0 1.6-1.6V8.4L13.6 3.6Z" />
+          <path d="M13.6 3.6v4.8h4.8" />
+        }
+        @case ('download') {
+          <path d="M12 5.2v10.4" />
+          <path d="m7.6 11.2 4.4 4.4 4.4-4.4" />
+          <path d="M20.4 15.6v2.4a1.6 1.6 0 0 1-1.6 1.6H5.2A1.6 1.6 0 0 1 3.6 18v-2.4" />
+        }
+        @case ('briefcase') {
+          <path d="M4.4 8.4h15.2a1.6 1.6 0 0 1 1.6 1.6v7.6a1.6 1.6 0 0 1-1.6 1.6H4.4a1.6 1.6 0 0 1-1.6-1.6V10a1.6 1.6 0 0 1 1.6-1.6Z" />
+          <path d="M8.8 8.4V6a1.6 1.6 0 0 1 1.6-1.6h3.2A1.6 1.6 0 0 1 15.2 6v2.4" />
+          <path d="M2.8 13.2h18.4" />
+        }
+        @case ('map-pin') {
+          <path d="M12 21.2S4.4 14.4 4.4 9.6a7.6 7.6 0 1 1 15.2 0c0 4.8-7.6 11.6-7.6 11.6Z" />
+          <circle cx="12" cy="9.6" r="2.4" />
+        }
+        @case ('phone') {
+          <path d="M5.6 4h4l1.6 4.8-2.4 1.6a12 12 0 0 0 4.8 4.8l1.6-2.4 4.8 1.6v4c0 .9-.7 1.6-1.6 1.6C9.2 20 4 14.8 4 7.6A1.6 1.6 0 0 1 5.6 4Z" />
+        }
+        @case ('heart') {
+          <path d="M12 7.8C10.4 5.2 7.2 4.4 4.8 6.4S2 11.6 4.4 14L12 21.2l7.6-7.2c2.4-2.4 2-5.6-.4-7.6S13.6 5.2 12 7.8Z" />
+        }
+        @case ('history') {
+          <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+          <path d="M3 3v5h5" />
+          <path d="M12 7v5l4 2" />
+        }
+        @case ('file-text') {
+          <path d="M13.6 3.6H7.2A1.6 1.6 0 0 0 5.6 5.2v13.6a1.6 1.6 0 0 0 1.6 1.6h9.6a1.6 1.6 0 0 0 1.6-1.6V8.4L13.6 3.6Z" />
+          <path d="M13.6 3.6v4.8h4.8" />
+          <path d="M9.6 13.2h4.8" />
+          <path d="M9.6 16.4h4.8" />
         }
       }
     </svg>

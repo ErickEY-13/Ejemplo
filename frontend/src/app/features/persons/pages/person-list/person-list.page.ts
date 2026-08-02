@@ -1,11 +1,11 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
-import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { ChangeDetectionStrategy, Component, inject, signal, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { Subject, of } from 'rxjs';
-import { catchError, debounceTime, distinctUntilChanged, switchMap, tap } from 'rxjs/operators';
+import { Subject, of, timer } from 'rxjs';
+import { catchError, debounceTime, distinctUntilChanged, switchMap, tap, takeWhile } from 'rxjs/operators';
 
-import { EMPTY_META, Paginated } from '../../../../core/api/api.types';
+import { Paginated } from '../../../../core/api/api.types';
 import { NotificationService } from '../../../../core/notifications/notification.service';
 import { ConfirmService } from '../../../../shared/components/confirm-dialog/confirm.service';
 import { EmptyStateComponent } from '../../../../shared/components/empty-state/empty-state';
@@ -20,8 +20,7 @@ import {
 } from '../../models/person.model';
 import { PersonService } from '../../services/person.service';
 
-const EMPTY_PAGE: Paginated<Person> = { data: [], meta: EMPTY_META };
-
+import { PersonStore } from '../../store/person.store';
 @Component({
   selector: 'app-person-list',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -41,38 +40,13 @@ export class PersonListPage {
   private readonly confirm = inject(ConfirmService);
   private readonly notifications = inject(NotificationService);
 
-  /** Filtros activos; cualquier cambio dispara una nueva consulta. */
-  protected readonly filters = signal<PersonFilters>({ ...DEFAULT_PERSON_FILTERS });
-  protected readonly loading = signal(false);
-
-  /** Se incrementa para forzar una recarga con los mismos filtros. */
-  private readonly refreshToken = signal(0);
-
-  private readonly query = computed(() => ({
-    filters: this.filters(),
-    token: this.refreshToken(),
-  }));
-
-  private readonly page = toSignal(
-    toObservable(this.query).pipe(
-      tap(() => this.loading.set(true)),
-      switchMap(({ filters }) => this.persons.list(filters).pipe(catchError(() => of(EMPTY_PAGE)))),
-      tap(() => this.loading.set(false)),
-    ),
-    { initialValue: EMPTY_PAGE },
-  );
-
-  protected readonly items = computed(() => this.page().data);
-  protected readonly meta = computed(() => this.page().meta);
-  protected readonly hasFilters = computed(() => {
-    const { search, document_type, is_active, with_trashed } = this.filters();
-    return search !== '' || document_type !== '' || is_active !== '' || with_trashed;
-  });
-
-  protected readonly metadata = toSignal(
-    this.persons.metadata().pipe(catchError(() => of(null as PersonMetadata | null))),
-    { initialValue: null },
-  );
+  protected readonly store = inject(PersonStore);
+  protected readonly items = this.store.items;
+  protected readonly filters = this.store.filters;
+  protected readonly loading = this.store.loading;
+  protected readonly meta = this.store.meta;
+  protected readonly metadata = this.store.metadata;
+  protected readonly hasFilters = this.store.hasFilters;
 
   /** Texto del buscador, con retardo para no lanzar una petición por tecla. */
   private readonly searchTerm = new Subject<string>();
@@ -80,7 +54,7 @@ export class PersonListPage {
   constructor() {
     this.searchTerm
       .pipe(debounceTime(300), distinctUntilChanged(), takeUntilDestroyed())
-      .subscribe((search) => this.patchFilters({ search }));
+      .subscribe((search) => this.store.patchFilters({ search }));
   }
 
   protected onSearch(value: string): void {
@@ -89,25 +63,20 @@ export class PersonListPage {
 
   /** Aplica cambios de filtro y vuelve siempre a la primera página. */
   protected patchFilters(patch: Partial<PersonFilters>): void {
-    this.filters.update((current) => ({ ...current, ...patch, page: patch.page ?? 1 }));
+    this.store.patchFilters(patch);
   }
 
   protected goToPage(page: number): void {
-    this.filters.update((current) => ({ ...current, page }));
+    this.store.goToPage(page);
   }
 
   protected sortBy(column: string): void {
-    this.filters.update((current) => ({
-      ...current,
-      sort: column,
-      direction: current.sort === column && current.direction === 'asc' ? 'desc' : 'asc',
-      page: 1,
-    }));
+    this.store.sortBy(column);
   }
 
   /** Flecha de orden de la columna, o `null` si no es la que ordena. */
   protected sortIcon(column: string): IconName | null {
-    const { sort, direction } = this.filters();
+    const { sort, direction } = this.store.filters();
 
     if (sort !== column) {
       return null;
@@ -117,7 +86,14 @@ export class PersonListPage {
   }
 
   protected resetFilters(): void {
-    this.filters.set({ ...DEFAULT_PERSON_FILTERS });
+    this.store.resetFilters();
+  }
+
+  /** Devuelve las iniciales del nombre y apellido. */
+  protected getInitials(person: Person): string {
+    const f = person.first_name?.charAt(0)?.toUpperCase() ?? '';
+    const l = person.last_name?.charAt(0)?.toUpperCase() ?? '';
+    return f + l || '?';
   }
 
   protected async remove(person: Person): Promise<void> {
@@ -135,7 +111,7 @@ export class PersonListPage {
     this.persons.remove(person.id).subscribe({
       next: () => {
         this.notifications.success(`${person.full_name} se eliminó correctamente.`);
-        this.reload();
+        this.store.reload();
       },
     });
   }
@@ -144,12 +120,105 @@ export class PersonListPage {
     this.persons.restore(person.id).subscribe({
       next: () => {
         this.notifications.success(`${person.full_name} se restauró correctamente.`);
-        this.reload();
+        this.store.reload();
       },
     });
   }
 
-  private reload(): void {
-    this.refreshToken.update((value) => value + 1);
+  protected readonly exportingExcel = signal(false);
+  protected readonly exportingPdf = signal(false);
+
+  // ---------------------------------------------------------------- Importación
+  protected readonly importing = signal(false);
+  protected readonly importProgress = signal(0);
+  protected readonly importTotal = signal(0);
+  private readonly destroyRef = inject(DestroyRef);
+
+  protected triggerFileInput(fileInput: HTMLInputElement): void {
+    fileInput.click();
   }
+
+  protected onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (!input.files?.length) return;
+
+    const file = input.files[0];
+    input.value = '';
+    
+    this.importing.set(true);
+    this.importProgress.set(0);
+    this.importTotal.set(0);
+
+    this.persons.uploadCsvMasivo(file).subscribe({
+      next: (res) => this.pollImportStatus(res.jobId),
+      error: () => {
+        this.importing.set(false);
+        this.notifications.error('Error al iniciar la importación.');
+      }
+    });
+  }
+
+  private pollImportStatus(jobId: string): void {
+    timer(0, 1000).pipe(
+      switchMap(() => this.persons.getImportStatus(jobId).pipe(catchError(() => of({ status: 'error', progress: 0, total: 0 })))),
+      takeWhile(res => res.status !== 'completed' && res.status !== 'error', true),
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe({
+      next: (res) => {
+        this.importProgress.set(res.progress);
+        this.importTotal.set(res.total);
+        if (res.status === 'completed') {
+          this.importing.set(false);
+          this.notifications.success('¡Importación masiva completada!');
+          this.store.reload();
+        } else if (res.status === 'error') {
+          this.importing.set(false);
+          this.notifications.error('Ocurrió un error en la importación.');
+        }
+      }
+    });
+  }
+
+  // ---------------------------------------------------------------- Exportación
+  protected exportExcel(): void {
+    this.exportingExcel.set(true);
+    this.persons.exportExcel(this.store.filters()).subscribe({
+      next: (blob) => {
+        this.downloadBlob(blob, 'Empleados.xlsx');
+        this.exportingExcel.set(false);
+        this.notifications.success('Excel exportado correctamente.');
+      },
+      error: () => {
+        this.exportingExcel.set(false);
+        this.notifications.error('Error al exportar Excel.');
+      }
+    });
+  }
+
+  protected exportPdf(): void {
+    this.exportingPdf.set(true);
+    this.persons.exportPdf(this.store.filters()).subscribe({
+      next: (blob) => {
+        this.downloadBlob(blob, 'Reporte_Empleados.pdf');
+        this.exportingPdf.set(false);
+        this.notifications.success('PDF exportado correctamente.');
+      },
+      error: () => {
+        this.exportingPdf.set(false);
+        this.notifications.error('Error al exportar PDF.');
+      }
+    });
+  }
+
+  private downloadBlob(blob: Blob, filename: string): void {
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  }
+
 }

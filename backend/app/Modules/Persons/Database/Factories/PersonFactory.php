@@ -4,8 +4,15 @@ declare(strict_types=1);
 
 namespace App\Modules\Persons\Database\Factories;
 
+use App\Modules\Persons\Enums\Area;
+use App\Modules\Persons\Enums\ContractType;
 use App\Modules\Persons\Enums\DocumentType;
+use App\Modules\Persons\Enums\EducationLevel;
 use App\Modules\Persons\Enums\Gender;
+use App\Modules\Persons\Enums\MaritalStatus;
+use App\Modules\Persons\Enums\PensionSystem;
+use App\Modules\Persons\Enums\Site;
+use App\Modules\Persons\Enums\WorkShift;
 use App\Modules\Persons\Models\Person;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -15,17 +22,6 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 class PersonFactory extends Factory
 {
     protected $model = Person::class;
-
-    /**
-     * @var list<string>
-     */
-    private const SITES = [
-        'Obras Públicas',
-        'Parques y Jardines',
-        'Tránsito',
-        'Aseo y Ornato',
-        'Alcaldía',
-    ];
 
     /**
      * @return array<string, mixed>
@@ -42,9 +38,21 @@ class PersonFactory extends Factory
             'email' => fake()->unique()->safeEmail(),
             'phone' => fake()->numerify('9########'),
             'address' => fake()->address(),
-            'site' => fake()->randomElement(self::SITES),
+            'marital_status' => fake()->randomElement(MaritalStatus::cases()),
+            'education_level' => fake()->randomElement(EducationLevel::cases()),
+            'children_count' => fake()->numberBetween(0, 5),
+            'emergency_contact_name' => fake()->name(),
+            'emergency_contact_phone' => fake()->numerify('9########'),
+            'ruc' => fake()->numerify('10#########'),
+            'pension_system' => fake()->randomElement(PensionSystem::cases()),
+            'area' => fake()->randomElement(Area::cases()),
+            'position' => fake()->jobTitle(),
+            'contract_type' => fake()->randomElement(ContractType::cases()),
+            'hire_date' => fake()->dateTimeBetween('-5 years', 'now'),
+            'work_shift' => fake()->randomElement(WorkShift::cases()),
+            'site' => fake()->randomElement(Site::cases()),
             'is_active' => true,
-            'notes' => null,
+            'notes' => fake()->optional()->sentence(),
         ];
     }
 

@@ -4,10 +4,18 @@
     <p>Los campos marcados con <span class="field__required">*</span> son obligatorios.</p>
   </div>
 
-  <a class="btn btn--ghost" routerLink="/personas">
-    <app-icon name="arrow-left" [size]="16" />
-    Volver al listado
-  </a>
+  <div class="page-header__actions">
+    @if (isEdit()) {
+      <button type="button" class="btn btn--outline" (click)="downloadPdf()" [disabled]="downloadingPdf()">
+        <app-icon name="file-text" [size]="15" />
+        {{ downloadingPdf() ? 'Generando PDF…' : 'Descargar Ficha' }}
+      </button>
+    }
+    <a class="btn btn--ghost" routerLink="/personas">
+      <app-icon name="arrow-left" [size]="16" />
+      Volver al listado
+    </a>
+  </div>
 </div>
 
 @if (loading()) {
@@ -30,11 +38,38 @@
       </div>
     }
 
-    <div class="form__intro">
-      <div class="form__intro-badge">Ficha completa</div>
-      <p>Completa los datos principales y deja la información lista para su consulta y mantenimiento.</p>
+    <!-- ============================================ FOTO DE PERFIL -->
+    <div class="photo-section">
+      <div class="photo-avatar" (click)="photoInput.click()">
+        @if (photoPreview()) {
+          <img [src]="photoPreview()" alt="Foto de perfil" class="photo-avatar__img" />
+        } @else {
+          <span class="photo-avatar__initials">{{ initials() }}</span>
+        }
+        <div class="photo-avatar__overlay">
+          <app-icon name="camera" [size]="24" />
+        </div>
+        <input
+          #photoInput
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          class="visually-hidden"
+          (change)="onPhotoSelected($event)"
+        />
+      </div>
+      <div class="photo-section__info">
+        <span class="photo-section__title">Foto de perfil</span>
+        <span class="photo-section__hint">JPEG, PNG o WebP. Máximo 4 MB.</span>
+        @if (photoPreview() && isEdit()) {
+          <button type="button" class="btn btn--link btn--sm photo-section__remove" (click)="removePhoto()">
+            <app-icon name="trash" [size]="14" />
+            Eliminar foto
+          </button>
+        }
+      </div>
     </div>
 
+    <!-- ============================================ IDENTIFICACIÓN -->
     <fieldset class="form__section">
       <legend class="form__legend">Identificación</legend>
 
@@ -72,6 +107,7 @@
       </div>
     </fieldset>
 
+    <!-- ============================================ DATOS PERSONALES -->
     <fieldset class="form__section">
       <legend class="form__legend">Datos personales</legend>
 
@@ -124,11 +160,131 @@
             }
           </select>
         </div>
+
+        <div class="field">
+          <label class="field__label" for="marital_status">Estado civil</label>
+          <select id="marital_status" class="select" formControlName="marital_status">
+            <option value="">— Seleccionar —</option>
+            @for (option of metadata()?.marital_statuses ?? []; track option.value) {
+              <option [value]="option.value">{{ option.label }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="education_level">Nivel educativo</label>
+          <select id="education_level" class="select" formControlName="education_level">
+            <option value="">— Seleccionar —</option>
+            @for (option of metadata()?.education_levels ?? []; track option.value) {
+              <option [value]="option.value">{{ option.label }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="children_count">Número de hijos</label>
+          <input
+            id="children_count"
+            class="input"
+            type="number"
+            min="0"
+            max="50"
+            formControlName="children_count"
+          />
+        </div>
       </div>
     </fieldset>
 
+    <!-- ============================================ DATOS LABORALES -->
     <fieldset class="form__section">
-      <legend class="form__legend">Contacto</legend>
+      <legend class="form__legend">
+        <app-icon name="briefcase" [size]="16" />
+        Datos laborales
+      </legend>
+
+      <div class="form__grid">
+        <div class="field">
+          <label class="field__label" for="area">Área</label>
+          <select id="area" class="select" formControlName="area">
+            <option value="">— Seleccionar —</option>
+            @for (option of metadata()?.areas ?? []; track option.value) {
+              <option [value]="option.value">{{ option.label }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="position">Cargo</label>
+          <input id="position" class="input" type="text" formControlName="position" placeholder="Ej: Coordinador, Técnico…" />
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="contract_type">Tipo de contrato</label>
+          <select id="contract_type" class="select" formControlName="contract_type">
+            <option value="">— Seleccionar —</option>
+            @for (option of metadata()?.contract_types ?? []; track option.value) {
+              <option [value]="option.value">{{ option.label }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="hire_date">Fecha de ingreso</label>
+          <input id="hire_date" class="input" type="date" formControlName="hire_date" />
+          @if (errorFor('hire_date', 'la fecha de ingreso'); as message) {
+            <span class="field__error">{{ message }}</span>
+          }
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="work_shift">Turno de trabajo</label>
+          <select id="work_shift" class="select" formControlName="work_shift">
+            <option value="">— Seleccionar —</option>
+            @for (option of metadata()?.work_shifts ?? []; track option.value) {
+              <option [value]="option.value">{{ option.label }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="site">
+            <app-icon name="map-pin" [size]="14" />
+            Sede
+          </label>
+          <select id="site" class="select" formControlName="site">
+            <option value="">— Seleccionar —</option>
+            @for (option of metadata()?.sites ?? []; track option.value) {
+              <option [value]="option.value">{{ option.label }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="ruc">RUC</label>
+          <input id="ruc" class="input" type="text" formControlName="ruc" maxlength="11" placeholder="Solo números" />
+          @if (errorFor('ruc', 'el RUC'); as message) {
+            <span class="field__error">{{ message }}</span>
+          }
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="pension_system">Sistema de pensión</label>
+          <select id="pension_system" class="select" formControlName="pension_system">
+            <option value="">— Seleccionar —</option>
+            @for (option of metadata()?.pension_systems ?? []; track option.value) {
+              <option [value]="option.value">{{ option.label }}</option>
+            }
+          </select>
+        </div>
+      </div>
+    </fieldset>
+
+    <!-- ============================================ CONTACTO -->
+    <fieldset class="form__section">
+      <legend class="form__legend">
+        <app-icon name="phone" [size]="16" />
+        Contacto
+      </legend>
 
       <div class="form__grid">
         <div class="field">
@@ -161,22 +317,154 @@
             <span class="field__error">{{ message }}</span>
           }
         </div>
+      </div>
+
+      <div class="form__grid emergency-grid">
+        <div class="emergency-header form__full">
+          <app-icon name="alert-triangle" [size]="15" />
+          <span>Contacto de emergencia</span>
+        </div>
 
         <div class="field">
-          <label class="field__label" for="site">Sede</label>
-          <input id="site" class="input" type="text" formControlName="site" list="person-sites" />
-          <datalist id="person-sites">
-            @for (site of metadata()?.sites ?? []; track site) {
-              <option [value]="site"></option>
-            }
-          </datalist>
-          @if (errorFor('site', 'la sede'); as message) {
+          <label class="field__label" for="emergency_contact_name">Nombre del contacto</label>
+          <input id="emergency_contact_name" class="input" type="text" formControlName="emergency_contact_name" />
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="emergency_contact_phone">Teléfono de emergencia</label>
+          <input id="emergency_contact_phone" class="input" type="tel" formControlName="emergency_contact_phone" />
+          @if (errorFor('emergency_contact_phone', 'el teléfono de emergencia'); as message) {
             <span class="field__error">{{ message }}</span>
           }
         </div>
       </div>
     </fieldset>
 
+    <!-- ============================================ DOCUMENTOS -->
+    <fieldset class="form__section">
+      <legend class="form__legend">
+        <app-icon name="file" [size]="16" />
+        Documentos adjuntos
+      </legend>
+
+      <p class="form__section-hint">Puedes adjuntar hasta 3 archivos (PDF, Word o imágenes). Máximo 10 MB cada uno.</p>
+
+      @if (documents().length > 0 || pendingDocuments().length > 0) {
+        <div class="doc-list">
+          @for (doc of documents(); track doc.id) {
+            <div class="doc-card">
+              <div class="doc-card__icon">
+                <app-icon name="file" [size]="20" />
+              </div>
+              <div class="doc-card__info">
+                <span class="doc-card__name">{{ doc.original_name }}</span>
+                <span class="doc-card__meta">
+                  <span class="badge badge--subtle">{{ doc.type_label }}</span>
+                  {{ formatFileSize(doc.size_bytes) }}
+                </span>
+              </div>
+              <div class="doc-card__actions">
+                <a class="btn btn--ghost btn--sm" [href]="doc.file_url" target="_blank" rel="noopener">
+                  <app-icon name="download" [size]="14" />
+                </a>
+                <button type="button" class="btn btn--ghost btn--sm" (click)="removeDocument(doc)">
+                  <app-icon name="trash" [size]="14" />
+                </button>
+              </div>
+            </div>
+          }
+          
+          @for (pdoc of pendingDocuments(); track $index) {
+            <div class="doc-card">
+              <div class="doc-card__icon">
+                <app-icon name="file" [size]="20" />
+              </div>
+              <div class="doc-card__info">
+                <span class="doc-card__name">{{ pdoc.file.name }}</span>
+                <span class="doc-card__meta">
+                  <span class="badge badge--subtle">{{ pdoc.typeLabel }}</span>
+                  Pendiente (se subirá al guardar)
+                </span>
+              </div>
+              <div class="doc-card__actions">
+                <button type="button" class="btn btn--ghost btn--sm" (click)="removePendingDocument($index)">
+                  <app-icon name="trash" [size]="14" />
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      }
+
+      @if (documents().length + pendingDocuments().length < 3) {
+        <div class="doc-upload">
+          <div class="doc-upload__row">
+            <select class="select doc-upload__type" [(ngModel)]="docType" [ngModelOptions]="{ standalone: true }">
+              @for (option of metadata()?.document_types_attach ?? []; track option.value) {
+                <option [value]="option.value">{{ option.label }}</option>
+              }
+            </select>
+            <button type="button" class="btn btn--ghost" (click)="docInput.click()" [disabled]="uploadingDoc()">
+              <app-icon name="upload" [size]="16" />
+              {{ uploadingDoc() ? 'Subiendo…' : 'Adjuntar archivo' }}
+            </button>
+            <input
+              #docInput
+              type="file"
+              accept=".pdf,.doc,.docx,.jpeg,.jpg,.png"
+              class="visually-hidden"
+              (change)="onDocumentSelected($event)"
+            />
+          </div>
+        </div>
+      }
+    </fieldset>
+
+    <!-- ============================================ AUDITORIA -->
+    @if (isEdit()) {
+      <fieldset class="form__section timeline-section">
+        <legend class="form__legend">
+          <app-icon name="history" [size]="16" />
+          Historial de cambios
+        </legend>
+
+        <div class="timeline">
+          @for (audit of audits(); track audit.id) {
+            <div class="timeline__item">
+              <div class="timeline__icon" [class]="'timeline__icon--' + audit.event">
+                <app-icon [name]="audit.event === 'created' ? 'plus' : (audit.event === 'deleted' ? 'trash' : 'pencil')" [size]="14" />
+              </div>
+              <div class="timeline__content">
+                <div class="timeline__header">
+                  <strong>{{ audit.author_name }}</strong>
+                  <span class="timeline__event-name">
+                    {{ audit.event === 'created' ? 'registró a la persona' : (audit.event === 'deleted' ? 'eliminó a la persona' : 'actualizó los datos') }}
+                  </span>
+                  <span class="timeline__date">{{ audit.created_at | date:'dd/MM/yyyy HH:mm' }}</span>
+                </div>
+                
+                @if (audit.event === 'updated' && audit.new_values) {
+                  <div class="timeline__changes">
+                    @for (key of objectKeys(audit.new_values); track key) {
+                      <div class="timeline__change">
+                        <span class="timeline__field">{{ key }}</span>: 
+                        <span class="timeline__old">{{ audit.old_values?.[key] ?? 'vacío' }}</span> 
+                        &rarr; 
+                        <span class="timeline__new">{{ audit.new_values[key] }}</span>
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+            </div>
+          } @empty {
+            <p class="timeline__empty">No hay registro de cambios.</p>
+          }
+        </div>
+      </fieldset>
+    }
+
+    <!-- ============================================ OTROS -->
     <fieldset class="form__section">
       <legend class="form__legend">Otros</legend>
 

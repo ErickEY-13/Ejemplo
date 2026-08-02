@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Modules\Persons\Http\Requests;
 
+use App\Modules\Persons\Enums\Area;
+use App\Modules\Persons\Enums\ContractType;
 use App\Modules\Persons\Enums\DocumentType;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -14,7 +16,7 @@ use Illuminate\Validation\Rules\Enum;
  */
 class IndexPersonRequest extends FormRequest
 {
-    public const SORTABLE = ['id', 'first_name', 'last_name', 'document_number', 'birth_date', 'created_at'];
+    public const SORTABLE = ['id', 'first_name', 'last_name', 'document_number', 'birth_date', 'hire_date', 'created_at'];
 
     public function authorize(): bool
     {
@@ -29,6 +31,8 @@ class IndexPersonRequest extends FormRequest
         return [
             'search' => ['nullable', 'string', 'max:100'],
             'document_type' => ['nullable', new Enum(DocumentType::class)],
+            'area' => ['nullable', new Enum(Area::class)],
+            'contract_type' => ['nullable', new Enum(ContractType::class)],
             'is_active' => ['nullable', 'boolean'],
             'with_trashed' => ['nullable', 'boolean'],
             'sort' => ['nullable', 'string', Rule::in(self::SORTABLE)],
@@ -48,6 +52,8 @@ class IndexPersonRequest extends FormRequest
         return [
             'search' => $this->string('search')->trim()->value(),
             'document_type' => $this->input('document_type'),
+            'area' => $this->input('area'),
+            'contract_type' => $this->input('contract_type'),
             'is_active' => $this->has('is_active') ? $this->boolean('is_active') : null,
             'with_trashed' => $this->boolean('with_trashed'),
             'sort' => $this->input('sort', 'created_at'),

@@ -18,6 +18,11 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('metadata', [PersonController::class, 'metadata'])->name('metadata');
+Route::get('export/excel', [PersonController::class, 'exportExcel'])->name('export.excel');
+Route::get('export/pdf', [PersonController::class, 'exportPdf'])->name('export.pdf');
+
+Route::post('import/csv', [PersonController::class, 'importCsv'])->name('import.csv');
+Route::get('import/csv/{jobId}/status', [PersonController::class, 'importStatus'])->name('import.status');
 
 Route::get('/', [PersonController::class, 'index'])->name('index');
 Route::post('/', [PersonController::class, 'store'])->name('store');
@@ -27,3 +32,16 @@ Route::delete('{person}', [PersonController::class, 'destroy'])->name('destroy')
 Route::post('{person}/restore', [PersonController::class, 'restore'])
     ->withTrashed()
     ->name('restore');
+
+// Foto de perfil
+Route::post('{person}/photo', [PersonController::class, 'uploadPhoto'])->name('photo.store');
+Route::delete('{person}/photo', [PersonController::class, 'destroyPhoto'])->name('photo.destroy');
+
+// Documentos adjuntos
+Route::post('{person}/documents', [PersonController::class, 'storeDocument'])->name('documents.store');
+Route::delete('{person}/documents/{document}', [PersonController::class, 'destroyDocument'])->name('documents.destroy');
+
+// Extras (Entrevista)
+Route::get('{person}/audits', [PersonController::class, 'audits'])->name('audits');
+Route::get('{person}/pdf', [PersonController::class, 'pdf'])->name('pdf');
+

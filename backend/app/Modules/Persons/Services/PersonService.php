@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace App\Modules\Persons\Services;
 
+use App\Modules\Persons\Enums\PersonDocumentType;
 use App\Modules\Persons\Models\Person;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * Lógica de negocio del módulo de Personas.
@@ -18,11 +22,21 @@ class PersonService
 {
     /**
      * @param  array<string, mixed>  $filters
+     * @return \Illuminate\Database\Eloquent\Collection<int, Person>
+     */
+    public function getForExport(array $filters = []): \Illuminate\Database\Eloquent\Collection
+    {
+        return $this->query($filters)->get();
+    }
+
+    /**
+     * @param  array<string, mixed>  $filters
      * @return LengthAwarePaginator<int, Person>
      */
     public function paginate(array $filters = []): LengthAwarePaginator
     {
         return $this->query($filters)
+            ->with('media')
             ->paginate((int) ($filters['per_page'] ?? 15))
             ->withQueryString();
     }
@@ -42,7 +56,7 @@ class PersonService
     {
         $person->fill($data)->save();
 
-        return $person->refresh();
+        return $person->refresh()->load('media');
     }
 
     public function delete(Person $person): void
@@ -54,7 +68,49 @@ class PersonService
     {
         $person->restore();
 
-        return $person->refresh();
+        return $person->refresh()->load('media');
+    }
+
+    // --------------------------------------------------------------- Foto
+
+    /**
+     * Guarda la foto en el disco `public` y reemplaza la anterior si existía.
+     */
+    public function updatePhoto(Person $person, UploadedFile $file): Person
+    {
+        $person->addMedia($file)->toMediaCollection('avatar');
+
+        return $person->refresh()->load('media');
+    }
+
+    /**
+     * Borra la foto actual de la persona, si tiene.
+     */
+    public function deletePhoto(Person $person): Person
+    {
+        $person->clearMediaCollection('avatar');
+
+        return $person->refresh()->load('media');
+    }
+
+    // --------------------------------------------------------- Documentos
+
+    /**
+     * Guarda un documento adjunto en el disco `public`.
+     */
+    public function addDocument(Person $person, UploadedFile $file, PersonDocumentType $type): Media
+    {
+        return $person->addMedia($file)
+            ->withCustomProperties(['document_type' => $type->value])
+            ->toMediaCollection('documents');
+    }
+
+    /**
+     * Borra un documento adjunto del disco y la base de datos.
+     */
+    public function removeDocument(Media $document): void
+    {
+        $document->delete();
     }
 
     /**
@@ -88,6 +144,14 @@ class PersonService
             ->when(
                 ! empty($filters['document_type']),
                 fn (Builder $q) => $q->where('document_type', $filters['document_type'])
+            )
+            ->when(
+                ! empty($filters['area']),
+                fn (Builder $q) => $q->where('area', $filters['area'])
+            )
+            ->when(
+                ! empty($filters['contract_type']),
+                fn (Builder $q) => $q->where('contract_type', $filters['contract_type'])
             )
             ->when(
                 isset($filters['is_active']) && $filters['is_active'] !== null,

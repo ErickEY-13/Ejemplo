@@ -74,5 +74,6 @@
 
 .main {
   flex: 1;
+  min-width: 0;
   padding: var(--sp-6) 0 var(--sp-7);
 }
