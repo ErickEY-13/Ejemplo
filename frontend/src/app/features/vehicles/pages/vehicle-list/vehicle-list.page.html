@@ -135,6 +135,19 @@
       />
     </div>
 
+    <div class="field">
+      <label class="field__label" for="vehicle-site">Sede</label>
+      <p-select
+        inputId="vehicle-site"
+        [options]="siteOptions()"
+        optionLabel="label"
+        optionValue="value"
+        [ngModel]="siteFilter()"
+        name="site_id"
+        (ngModelChange)="onSiteFilterChange($event)"
+      />
+    </div>
+
     <div class="filters__toggles">
       <label class="checkbox">
         <p-checkbox
@@ -173,7 +186,7 @@
     </app-empty-state>
   } @else {
     <div class="table-wrap" [class.is-loading]="loading()">
-      <p-table [value]="items()" dataKey="id" styleClass="p-datatable-sm" [rowHover]="true">
+      <p-table [value]="visibleItems()" dataKey="id" styleClass="p-datatable-sm" [rowHover]="true">
         <ng-template #caption>
           <span class="visually-hidden">Listado de vehículos registrados</span>
         </ng-template>
@@ -213,6 +226,7 @@
               </span>
             </th>
             <th>Estado</th>
+            <th>Sede / Responsable</th>
             <th class="cell-actions">Acciones</th>
           </tr>
         </ng-template>
@@ -239,6 +253,14 @@
                 <p-tag severity="success" value="Activo" />
               } @else {
                 <p-tag severity="secondary" value="Inactivo" />
+              }
+            </td>
+            <td>
+              @if (assignmentByVehicle().get(vehicle.id); as current) {
+                <span class="cell-title">{{ current.site?.name ?? 'Sin registrar' }}</span>
+                <span class="cell-sub">{{ current.person?.full_name ?? 'Sin responsable' }}</span>
+              } @else {
+                <span class="cell-sub">Sin asignación</span>
               }
             </td>
             <td class="cell-actions">

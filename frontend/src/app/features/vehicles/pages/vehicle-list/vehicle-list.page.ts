@@ -28,6 +28,8 @@ import {
   VehicleMetadata,
 } from '../../models/vehicle.model';
 import { VehicleService } from '../../services/vehicle.service';
+import { AssignmentService } from '../../../assignments/services/assignment.service';
+import { Site, VehicleAssignment } from '../../../assignments/models/assignment.model';
 
 const EMPTY_PAGE: Paginated<Vehicle> = { data: [], meta: EMPTY_META };
 
@@ -58,6 +60,60 @@ export class VehicleListPage {
   private readonly vehicles = inject(VehicleService);
   private readonly confirm = inject(ConfirmService);
   private readonly notifications = inject(NotificationService);
+  private readonly assignments = inject(AssignmentService);
+
+  protected readonly siteFilter = signal<number | null>(null);
+
+  protected readonly sites = toSignal(
+    this.assignments.getSites().pipe(catchError(() => of([] as Site[]))),
+    { initialValue: [] as Site[] },
+  );
+
+  protected readonly siteOptions = computed(() => [
+    { value: null, label: 'Todas' },
+    ...this.sites().map((site) => ({ value: site.id, label: site.name })),
+  ]);
+
+  /** Asignaciones vigentes; con filtro de sede activo, ya vienen acotadas a esa sede. */
+  private readonly currentAssignments = toSignal(
+    toObservable(this.siteFilter).pipe(
+      switchMap((siteId) =>
+        this.assignments.listCurrent(siteId ?? undefined).pipe(catchError(() => of([] as VehicleAssignment[]))),
+      ),
+    ),
+    { initialValue: [] as VehicleAssignment[] },
+  );
+
+  /** vehicle_id -> asignación vigente, para pintar sede/responsable en cada fila. */
+  protected readonly assignmentByVehicle = computed(() => {
+    const map = new Map<number, VehicleAssignment>();
+
+    for (const assignment of this.currentAssignments()) {
+      map.set(assignment.vehicle_id, assignment);
+    }
+
+    return map;
+  });
+
+  /**
+   * Filtrado en cliente sobre la página actual: ver nota de diseño al inicio
+   * del Task 7 del plan de trazabilidad de vehículos.
+   */
+  protected readonly visibleItems = computed(() => {
+    const siteId = this.siteFilter();
+
+    if (siteId === null) {
+      return this.items();
+    }
+
+    const assignedVehicleIds = new Set(this.currentAssignments().map((a) => a.vehicle_id));
+
+    return this.items().filter((vehicle) => assignedVehicleIds.has(vehicle.id));
+  });
+
+  protected onSiteFilterChange(siteId: number | null): void {
+    this.siteFilter.set(siteId);
+  }
 
   /** Filtros activos; cualquier cambio dispara una nueva consulta. */
   protected readonly filters = signal<VehicleFilters>({ ...DEFAULT_VEHICLE_FILTERS });
@@ -92,7 +148,8 @@ export class VehicleListPage {
       f.year_from !== '' ||
       f.year_to !== '' ||
       f.is_active !== '' ||
-      f.with_trashed
+      f.with_trashed ||
+      this.siteFilter() !== null
     );
   });
 
@@ -167,6 +224,7 @@ export class VehicleListPage {
 
   protected resetFilters(): void {
     this.filters.set({ ...DEFAULT_VEHICLE_FILTERS });
+    this.siteFilter.set(null);
   }
 
   protected async remove(vehicle: Vehicle): Promise<void> {
