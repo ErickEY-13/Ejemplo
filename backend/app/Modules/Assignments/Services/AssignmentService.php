@@ -59,19 +59,23 @@ class AssignmentService
      * `vehicle_assignments`, así que el historial queda completo por
      * construcción.
      *
-     * Uses row-level locking (FOR UPDATE) to prevent race conditions when
-     * concurrent requests try to assign the same vehicle: only one can
-     * read and close the active row, the others wait.
+     * Locks the Vehicle row (stable anchor) to serialize concurrent assign()
+     * calls on the same vehicle. Under PostgreSQL's READ COMMITTED isolation,
+     * this prevents the race condition where two concurrent txs both see the
+     * same active assignment before either closes it. The vehicle row always
+     * exists and never disappears, unlike the active assignment row.
      */
     public function assign(Vehicle $vehicle, int $siteId, ?int $personId, ?string $expectedReturnAt, ?string $notes): VehicleAssignment
     {
         return DB::transaction(function () use ($vehicle, $siteId, $personId, $expectedReturnAt, $notes) {
+            // Anchor lock: serializes concurrent assign() calls for the same vehicle
+            Vehicle::query()->where('id', $vehicle->id)->lockForUpdate()->first();
+
+            // Close any currently active assignment
             VehicleAssignment::query()
                 ->where('vehicle_id', $vehicle->id)
                 ->whereNull('ended_at')
-                ->lockForUpdate()
-                ->first()
-                ?->update(['ended_at' => now()]);
+                ->update(['ended_at' => now()]);
 
             return VehicleAssignment::query()->create([
                 'vehicle_id' => $vehicle->id,

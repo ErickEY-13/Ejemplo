@@ -140,17 +140,22 @@ class AssignmentServiceTest extends TestCase
 
         $this->service->assign($vehicle, $site->id, null, null, null);
 
-        // Verify that a SELECT query with FOR UPDATE was executed
-        $selectForUpdateQuery = array_filter(
+        // Verify that a SELECT...FOR UPDATE query on the vehicles table was executed first
+        // This is the anchor lock that serializes concurrent assign() calls on the same vehicle
+        $vehiclesAnchorLock = array_filter(
             $queriesExecuted,
             fn (string $sql) => stripos($sql, 'select') !== false
-                && stripos($sql, 'vehicle_assignments') !== false
+                && stripos($sql, 'vehicles') !== false
                 && stripos($sql, 'for update') !== false
         );
 
         $this->assertNotEmpty(
-            $selectForUpdateQuery,
-            'Expected a SELECT...FOR UPDATE query in the transaction, but none was found. Queries: ' . implode('; ', $queriesExecuted)
+            $vehiclesAnchorLock,
+            'Expected a SELECT...FOR UPDATE query on vehicles table (anchor lock), but none was found. Queries: ' . implode('; ', $queriesExecuted)
         );
+
+        // Note: This test verifies the SQL clause is present, but does not simulate real
+        // concurrent transactions (which would require multiple database connections in parallel).
+        // The presence of the anchor lock in the query proves the locking strategy is in place.
     }
 }
