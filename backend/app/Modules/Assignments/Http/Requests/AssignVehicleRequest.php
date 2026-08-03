@@ -20,8 +20,13 @@ class AssignVehicleRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'person_id' => [
+            'site_id' => [
                 'required',
+                'integer',
+                Rule::exists('sites', 'id'),
+            ],
+            'person_id' => [
+                'nullable',
                 'integer',
                 Rule::exists('people', 'id')->whereNull('deleted_at'),
             ],
@@ -36,6 +41,7 @@ class AssignVehicleRequest extends FormRequest
     public function attributes(): array
     {
         return [
+            'site_id' => 'sede',
             'person_id' => 'persona',
             'expected_return_at' => 'devolución prevista',
             'notes' => 'observaciones',

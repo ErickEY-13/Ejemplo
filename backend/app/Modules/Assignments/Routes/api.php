@@ -17,8 +17,11 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+Route::get('/', [AssignmentController::class, 'index'])->name('index');
+Route::get('sites', [AssignmentController::class, 'sites'])->name('sites');
 Route::get('people', [AssignmentController::class, 'people'])->name('people');
 
+Route::get('{vehicle}/history', [AssignmentController::class, 'history'])->name('history');
 Route::get('{vehicle}', [AssignmentController::class, 'show'])->name('show');
 Route::match(['put', 'patch'], '{vehicle}', [AssignmentController::class, 'store'])->name('store');
 Route::delete('{vehicle}', [AssignmentController::class, 'destroy'])->name('destroy');

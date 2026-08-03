@@ -22,17 +22,24 @@ class VehicleAssignmentResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
+            'id' => $this->id,
             'vehicle_id' => $this->vehicle_id,
-            'person' => [
+            'site' => $this->site !== null ? [
+                'id' => $this->site->id,
+                'code' => $this->site->code,
+                'name' => $this->site->name,
+            ] : null,
+            'person' => $this->person !== null ? [
                 'id' => $this->person->id,
                 'full_name' => $this->person->full_name,
                 'document_number' => $this->person->document_number,
                 'site' => $this->person->site,
                 'is_active' => $this->person->is_active,
                 'deleted_at' => $this->person->deleted_at?->toIso8601String(),
-            ],
+            ] : null,
             'notes' => $this->notes,
             'assigned_at' => $this->assigned_at->toIso8601String(),
+            'ended_at' => $this->ended_at?->toIso8601String(),
             'expected_return_at' => $this->expected_return_at?->toDateString(),
             'is_overdue' => $this->isOverdue(),
         ];
