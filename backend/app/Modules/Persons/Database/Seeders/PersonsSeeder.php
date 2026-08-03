@@ -15,7 +15,6 @@ use App\Modules\Persons\Enums\PensionSystem;
 use App\Modules\Persons\Enums\Site;
 use App\Modules\Persons\Enums\WorkShift;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
 
 /**
  * Lo ejecuta automáticamente Database\Seeders\DatabaseSeeder.
@@ -27,11 +26,8 @@ class PersonsSeeder extends Seeder
     {
         if (Person::query()->exists()) {
             $this->command?->info('Módulo Personas: ya hay datos, se omite el seeder.');
-
             return;
         }
-
-        $now = now()->toDateTimeString();
 
         $persons = [
             // Activos
@@ -56,7 +52,7 @@ class PersonsSeeder extends Seeder
             ['document_type' => DocumentType::Dni->value,        'document_number' => '38741596', 'first_name' => 'Alberto',   'last_name' => 'Soto Fernández',       'birth_date' => '1976-11-14', 'gender' => Gender::Male->value,   'email' => 'a.soto@municipio.gob.pe',     'phone' => '999012345', 'address' => 'Av. Brasil 147, Lima',          'marital_status' => MaritalStatus::Married->value,  'education_level' => EducationLevel::Technical->value,    'children_count' => 3, 'emergency_contact_name' => 'Pilar Soto',      'emergency_contact_phone' => '990234567', 'ruc' => null, 'pension_system' => PensionSystem::Onp->value,  'area' => Area::Transportation->value,    'position' => 'Mecánico',                'contract_type' => ContractType::Hired->value,          'hire_date' => '2009-08-03', 'work_shift' => WorkShift::Morning->value,   'site' => Site::Main->value,  'is_active' => true,  'notes' => null],
             ['document_type' => DocumentType::Dni->value,        'document_number' => '84521369', 'first_name' => 'Rosa',      'last_name' => 'Ccallo Hancco',        'birth_date' => '1996-02-14', 'gender' => Gender::Female->value, 'email' => 'r.ccallo@municipio.gob.pe',   'phone' => '988901234', 'address' => 'Jr. Cuzco 258, Lima',           'marital_status' => MaritalStatus::Single->value,   'education_level' => EducationLevel::University->value,   'children_count' => 0, 'emergency_contact_name' => 'Walter Ccallo',   'emergency_contact_phone' => '901345678', 'ruc' => null, 'pension_system' => PensionSystem::Afp->value,  'area' => Area::Administration->value,     'position' => 'Asistente Administrativa','contract_type' => ContractType::Intern->value,         'hire_date' => '2024-01-15', 'work_shift' => WorkShift::Morning->value,   'site' => Site::Main->value,  'is_active' => true,  'notes' => 'Practicante pre-profesional'],
             ['document_type' => DocumentType::Dni->value,        'document_number' => '57896321', 'first_name' => 'Gustavo',   'last_name' => 'Villanueva Cruz',      'birth_date' => '1982-07-08', 'gender' => Gender::Male->value,   'email' => 'g.villanueva@municipio.gob.pe','phone' => '977890123', 'address' => 'Urb. Chorrillos 369, Lima',     'marital_status' => MaritalStatus::Married->value,  'education_level' => EducationLevel::University->value,   'children_count' => 2, 'emergency_contact_name' => 'Norma Villanueva', 'emergency_contact_phone' => '912456789', 'ruc' => '10578963211', 'pension_system' => PensionSystem::Afp->value, 'area' => Area::CivilRegistry->value,     'position' => 'Jefe de Registro Civil',  'contract_type' => ContractType::Appointed->value,      'hire_date' => '2013-05-27', 'work_shift' => WorkShift::Morning->value,   'site' => Site::Main->value,  'is_active' => true,  'notes' => null],
-            ['document_type' => DocumentType::Dni->value,        'document_number' => '32145896', 'first_name' => 'Gabriela',  'last_name' => 'Paredes Inca',         'birth_date' => '1997-09-05', 'gender' => Gender::Female->value, 'email' => 'g.paredes@municipio.gob.pe',  'phone' => '966789012', 'address' => 'Av. La Marina 741, Lima',       'marital_status' => MaritalStatus::Single->value,   'education_level' => EducationLevel::University->value,   'children_count' => 0, 'emergency_contact_name' => 'Juan Paredes',    'emergency_contact_phone' => '923567890', 'ruc' => null, 'pension_system' => PensionSystem::Afp->value,  'area' => Area::Environment->value,       'position' => 'Bióloga',                 'contract_type' => ContractType::Cas->value,            'hire_date' => '2023-08-01', 'work_shift' => WorkShift::Morning->value,   'site' => Site::East->value,  'is_active' => true,  'notes' => null],
+            ['document_type' => DocumentType::Dni->value,        'document_number' => '32145896', 'first_name' => 'Gabriela',  'last_name' => 'Paredes Inca',         'birth_date' => '1997-09-05', 'gender' => Female->value, 'email' => 'g.paredes@municipio.gob.pe',  'phone' => '966789012', 'address' => 'Av. La Marina 741, Lima',       'marital_status' => MaritalStatus::Single->value,   'education_level' => EducationLevel::University->value,   'children_count' => 0, 'emergency_contact_name' => 'Juan Paredes',    'emergency_contact_phone' => '923567890', 'ruc' => null, 'pension_system' => PensionSystem::Afp->value,  'area' => Area::Environment->value,       'position' => 'Bióloga',                 'contract_type' => ContractType::Cas->value,            'hire_date' => '2023-08-01', 'work_shift' => WorkShift::Morning->value,   'site' => Site::East->value,  'is_active' => true,  'notes' => null],
             ['document_type' => DocumentType::Dni->value,        'document_number' => '79632145', 'first_name' => 'Marcos',    'last_name' => 'Huanca Quispe',        'birth_date' => '1973-04-19', 'gender' => Gender::Male->value,   'email' => 'm.huanca@municipio.gob.pe',   'phone' => '955678901', 'address' => 'Jr. Puno 852, Lima',            'marital_status' => MaritalStatus::Married->value,  'education_level' => EducationLevel::Secondary->value,    'children_count' => 4, 'emergency_contact_name' => 'Elvira Huanca',   'emergency_contact_phone' => '934678901', 'ruc' => null, 'pension_system' => PensionSystem::Onp->value,  'area' => Area::PublicCleaning->value,    'position' => 'Operario de Parques',     'contract_type' => ContractType::Hired->value,          'hire_date' => '2005-10-10', 'work_shift' => WorkShift::Morning->value,   'site' => Site::West->value,  'is_active' => true,  'notes' => null],
             ['document_type' => DocumentType::Dni->value,        'document_number' => '46523897', 'first_name' => 'Diana',     'last_name' => 'Palomino Tapia',       'birth_date' => '1990-12-31', 'gender' => Gender::Female->value, 'email' => 'd.palomino@municipio.gob.pe', 'phone' => '944567890', 'address' => 'Calle Ayacucho 963, Lima',      'marital_status' => MaritalStatus::Married->value,  'education_level' => EducationLevel::University->value,   'children_count' => 1, 'emergency_contact_name' => 'José Palomino',   'emergency_contact_phone' => '945789012', 'ruc' => null, 'pension_system' => PensionSystem::Afp->value,  'area' => Area::Health->value,             'position' => 'Psicóloga',               'contract_type' => ContractType::Cas->value,            'hire_date' => '2019-03-18', 'work_shift' => WorkShift::Morning->value,   'site' => Site::North->value, 'is_active' => true,  'notes' => null],
             ['document_type' => DocumentType::Dni->value,        'document_number' => '93654128', 'first_name' => 'Andrés',    'last_name' => 'Morales Benavides',    'birth_date' => '1979-08-22', 'gender' => Gender::Male->value,   'email' => 'a.morales@municipio.gob.pe',  'phone' => '933456789', 'address' => 'Urb. Miraflores 147, Lima',     'marital_status' => MaritalStatus::Married->value,  'education_level' => EducationLevel::University->value,   'children_count' => 2, 'emergency_contact_name' => 'Carla Morales',   'emergency_contact_phone' => '956890123', 'ruc' => '10936541281', 'pension_system' => PensionSystem::Afp->value, 'area' => Area::PublicWorks->value,       'position' => 'Supervisor de Obras',     'contract_type' => ContractType::Appointed->value,      'hire_date' => '2010-12-01', 'work_shift' => WorkShift::Morning->value,   'site' => Site::Main->value,  'is_active' => true,  'notes' => null],
@@ -69,13 +65,27 @@ class PersonsSeeder extends Seeder
             ['document_type' => DocumentType::Dni->value,        'document_number' => '64785239', 'first_name' => 'Víctor',    'last_name' => 'Aponte Delgado',       'birth_date' => '1967-01-24', 'gender' => Gender::Male->value,   'email' => 'v.aponte.ex@municipio.gob.pe', 'phone' => '977456789', 'address' => 'Av. Grau 147, Lima',            'marital_status' => MaritalStatus::Married->value,  'education_level' => EducationLevel::University->value,   'children_count' => 4, 'emergency_contact_name' => 'Lucía Aponte',    'emergency_contact_phone' => '912567890', 'ruc' => '10647852391', 'pension_system' => PensionSystem::Onp->value, 'area' => Area::PublicWorks->value,       'position' => 'Ex Ingeniero',            'contract_type' => ContractType::Appointed->value,      'hire_date' => '1998-07-01', 'work_shift' => WorkShift::Morning->value,   'site' => Site::Main->value,  'is_active' => false, 'notes' => 'Jubilado por años de servicio'],
         ];
 
-        $insertData = array_map(fn ($p) => array_merge($p, [
-            'created_at' => $now,
-            'updated_at' => $now,
-        ]), $persons);
+        // Se usa Person::create() para que se disparen eventos y podamos usar Spatie MediaLibrary
+        // Asignamos una foto de randomuser.me basada en el género.
+        foreach ($persons as $personData) {
+            $person = Person::create($personData);
 
-        DB::table('persons')->insert($insertData);
+            try {
+                // Seleccionar URL según el género
+                $gender = $person->gender->value === Gender::Male->value ? 'men' : 'women';
+                $randomNumber = rand(1, 99); // API de randomuser tiene fotos del 1 al 99
+                
+                $photoUrl = "https://randomuser.me/api/portraits/{$gender}/{$randomNumber}.jpg";
 
-        $this->command?->info('Módulo Personas: 30 registros creados (sin Faker).');
+                $person->addMediaFromUrl($photoUrl)->toMediaCollection('avatar');
+                
+                $this->command?->info("Foto asignada para {$person->first_name} {$person->last_name}");
+            } catch (\Exception $e) {
+                // Si falla (ej. sin internet), continuamos sin asignar la foto
+                $this->command?->error("No se pudo descargar la foto para {$person->first_name}: " . $e->getMessage());
+            }
+        }
+
+        $this->command?->info('Módulo Personas: 30 registros creados (con fotos de randomuser.me).');
     }
 }
