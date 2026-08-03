@@ -57,7 +57,7 @@ if [ "${APP_ENV:-local}" != "production" ]; then
 
     if [ ! -f vendor/autoload.php ] || [ "$(cat "$LOCK_HASH_FILE" 2>/dev/null)" != "$CURRENT_HASH" ]; then
         log "Instalando dependencias de Composer..."
-        as_app composer install --no-interaction --prefer-dist
+        as_app composer install --no-interaction --prefer-dist --ignore-platform-req=ext-gd --ignore-platform-req=ext-exif
         echo "$CURRENT_HASH" | as_app tee "$LOCK_HASH_FILE" > /dev/null
     else
         log "Dependencias de Composer al día."

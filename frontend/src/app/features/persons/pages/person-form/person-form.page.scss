@@ -88,7 +88,34 @@
   color: var(--c-danger);
 }
 
-/* ------------------------------------------- Formulario */
+/* ------------------------------------------- Formulario
+   El tema de PrimeNG inyecta sus estilos en tiempo de ejecución y puede
+   quedar después de estos en el DOM, así que se fuerza con `!important`
+   para que la identidad visual del formulario no dependa del orden de
+   carga. */
+:host ::ng-deep .p-inputtext,
+:host ::ng-deep .p-inputtextarea {
+  width: 100% !important;
+  border: 1px solid var(--c-border) !important;
+  border-radius: var(--radius-sm) !important;
+  background: var(--c-surface) !important;
+  color: var(--c-text) !important;
+  box-shadow: none !important;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+:host ::ng-deep .p-inputtext:focus,
+:host ::ng-deep .p-inputtextarea:focus {
+  border-color: var(--c-primary) !important;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12) !important;
+  background: #fff !important;
+}
+
+:host ::ng-deep .p-inputtextarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
 .form {
   padding: var(--sp-5);
 
@@ -237,38 +264,15 @@
   }
 }
 
-/* ------------------------------------------- Badge sutil */
-.badge--subtle {
-  padding: 0.15rem 0.45rem;
-  border-radius: 999px;
-  background: rgba(37, 99, 235, 0.08);
-  color: var(--c-primary-dark);
-  font-size: 0.7rem;
-  font-weight: 600;
-  letter-spacing: 0.03em;
+/* ------------------------------------------- Alertas */
+p-message {
+  display: block;
+  margin-bottom: var(--sp-4);
 }
 
-/* ------------------------------------------- Alertas */
-.alert {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--sp-3);
-  margin-bottom: var(--sp-4);
-  padding: var(--sp-3) var(--sp-4);
-  border-radius: var(--radius-sm);
-  border-left: 4px solid var(--c-danger);
-  background: var(--c-danger-soft);
-  color: var(--c-danger-dark);
-  font-size: 0.9rem;
-
-  &__icon {
-    margin-top: 1px;
-  }
-
-  ul {
-    margin: var(--sp-2) 0 0;
-    padding-left: var(--sp-5);
-  }
+.form__error-list {
+  margin: var(--sp-2) 0 0;
+  padding-left: var(--sp-5);
 }
 
 /* ------------------------------------------- Timeline (Auditoría) */

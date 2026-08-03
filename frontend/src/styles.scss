@@ -6,8 +6,10 @@
    debe ir en el SCSS de su propio componente.
    =========================================================================== */
 
-:root {
-  /* Color -------------------------------------------------------------- */
+@import 'primeflex/primeflex.css';
+@import 'primeicons/primeicons.css';
+
+:root {  /* Color -------------------------------------------------------------- */
   --c-bg: #f4f7fb;
   --c-surface: #ffffff;
   --c-surface-alt: #f8fbff;
@@ -132,87 +134,6 @@ a {
   }
 }
 
-/* Botones ----------------------------------------------------------------- */
-
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--sp-2);
-  padding: 0.6rem 1rem;
-  border: 1px solid transparent;
-  border-radius: var(--radius-sm);
-  background: var(--c-surface);
-  color: var(--c-text);
-  font: inherit;
-  font-weight: 600;
-  line-height: 1.2;
-  cursor: pointer;
-  transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
-  white-space: nowrap;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.65);
-
-  &:hover:not(:disabled) {
-    transform: translateY(-1px);
-  }
-
-  &:disabled {
-    opacity: 0.55;
-    cursor: not-allowed;
-  }
-
-  &--primary {
-    background: linear-gradient(135deg, var(--c-primary) 0%, var(--c-primary-dark) 100%);
-    border-color: var(--c-primary);
-    color: #fff;
-    box-shadow: 0 8px 18px rgba(31, 90, 165, 0.18);
-
-    &:hover:not(:disabled) {
-      background: linear-gradient(135deg, var(--c-primary-dark) 0%, var(--c-primary) 100%);
-      border-color: var(--c-primary-dark);
-    }
-  }
-
-  &--ghost {
-    border-color: var(--c-border-strong);
-    background: var(--c-surface);
-
-    &:hover:not(:disabled) {
-      background: var(--c-surface-alt);
-      box-shadow: var(--shadow-sm);
-    }
-  }
-
-  &--danger {
-    background: linear-gradient(135deg, var(--c-danger) 0%, var(--c-danger-dark) 100%);
-    border-color: var(--c-danger);
-    color: #fff;
-
-    &:hover:not(:disabled) {
-      background: linear-gradient(135deg, var(--c-danger-dark) 0%, var(--c-danger) 100%);
-      border-color: var(--c-danger-dark);
-    }
-  }
-
-  &--link {
-    padding: 0.25rem 0.4rem;
-    background: none;
-    color: var(--c-primary);
-    font-weight: 600;
-    box-shadow: none;
-
-    &:hover:not(:disabled) {
-      background: var(--c-primary-soft);
-      transform: none;
-    }
-  }
-
-  &--sm {
-    padding: 0.42rem 0.7rem;
-    font-size: 0.85rem;
-  }
-}
-
 /* Formularios ------------------------------------------------------------- */
 
 .field {
@@ -241,40 +162,17 @@ a {
   }
 }
 
+/* `pInputText`/`pTextarea` ya aportan el estilo visual vía el tema de
+   PrimeNG; aquí solo se fija el ancho y el estado de error, que PrimeNG no
+   conoce porque lo calculan los formularios reactivos de la app. */
 .input,
-.select,
 .textarea {
   width: 100%;
-  padding: 0.6rem 0.75rem;
-  border: 1px solid var(--c-border-strong);
-  border-radius: var(--radius-sm);
-  background: var(--c-surface);
-  color: var(--c-text);
-  font: inherit;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
-
-  &:focus {
-    outline: none;
-    border-color: var(--c-primary);
-    box-shadow: 0 0 0 3px var(--c-primary-soft);
-  }
 
   &.is-invalid {
-    border-color: var(--c-danger);
-    box-shadow: 0 0 0 3px rgba(194, 74, 59, 0.12);
+    border-color: var(--c-danger) !important;
+    box-shadow: 0 0 0 3px rgba(194, 74, 59, 0.12) !important;
   }
-
-  &:disabled {
-    background: var(--c-surface-alt);
-    color: var(--c-text-subtle);
-  }
-}
-
-.select {
-  padding-right: 2rem;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  overflow: hidden;
 }
 
 .textarea {
@@ -313,97 +211,30 @@ a {
   }
 }
 
-/* Tablas ------------------------------------------------------------------ */
+/* Tablas (p-table) ---------------------------------------------------------
+   El estilo del propio <table> lo aporta el tema de PrimeNG; aquí solo
+   quedan las convenciones propias de cabeceras ordenables y celdas de
+   acciones que usan los listados. */
 
 .table-wrap {
   overflow-x: auto;
 }
 
-.table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.92rem;
-
-  th,
-  td {
-    padding: 0.8rem 0.95rem;
-    text-align: left;
-    border-bottom: 1px solid var(--c-border);
-    vertical-align: middle;
-    white-space: nowrap;
-  }
-
-  th {
-    font-size: 0.78rem;
-    font-weight: 650;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    color: var(--c-text-muted);
-    background: linear-gradient(180deg, #f7faff 0%, #eef4fb 100%);
-  }
-
-  th.is-sortable {
-    cursor: pointer;
-    user-select: none;
-
-    &:hover {
-      color: var(--c-text);
-    }
-  }
-
-  /* Mantiene alineada la flecha de orden junto al título de la columna. */
-  .th-label {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--sp-2);
-  }
-
-  tbody tr:hover {
-    background: linear-gradient(90deg, rgba(31, 90, 165, 0.04) 0%, rgba(31, 90, 165, 0.01) 100%);
-  }
-
-  tbody tr:last-child td {
-    border-bottom: none;
-  }
-
-  .cell-actions {
-    text-align: right;
-    white-space: nowrap;
-  }
-
-  .row-actions {
-    display: flex;
-    gap: 0.5rem;
-    justify-content: flex-end;
-  }
+th.is-sortable {
+  cursor: pointer;
+  user-select: none;
 }
 
-/* Etiquetas de estado ------------------------------------------------------ */
+/* Mantiene alineada la flecha de orden junto al título de la columna. */
+.th-label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
 
-.badge {
-  display: inline-block;
-  padding: 0.18rem 0.6rem;
-  border-radius: 999px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  background: var(--c-surface-alt);
-  color: var(--c-text-muted);
-  border: 1px solid rgba(20, 36, 59, 0.08);
-
-  &--success {
-    background: var(--c-success-soft);
-    color: var(--c-success);
-  }
-
-  &--danger {
-    background: var(--c-danger-soft);
-    color: var(--c-danger);
-  }
-
-  &--warning {
-    background: var(--c-warning-soft);
-    color: var(--c-warning);
-  }
+.cell-actions {
+  text-align: right;
+  white-space: nowrap;
 }
 
 /* Utilidades -------------------------------------------------------------- */

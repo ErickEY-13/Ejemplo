@@ -5,13 +5,35 @@
     <p>Consulta, da de alta y mantén actualizada la flota de vehículos.</p>
   </div>
 
-  <a class="btn btn--primary page-header__action" routerLink="nuevo">
-    <app-icon name="plus" [size]="16" />
-    Nuevo vehículo
-  </a>
+  <div class="page-header__actions" style="display: flex; gap: var(--sp-2);">
+    <p-button
+      severity="secondary"
+      icon="pi pi-file"
+      [loading]="exportingExcel()"
+      [disabled]="items().length === 0"
+      (onClick)="exportExcel()"
+      [label]="exportingExcel() ? 'Exportando...' : 'Excel'"
+    />
+
+    <p-button
+      severity="secondary"
+      icon="pi pi-file-pdf"
+      [loading]="exportingPdf()"
+      [disabled]="items().length === 0"
+      (onClick)="exportPdf()"
+      [label]="exportingPdf() ? 'Exportando...' : 'PDF'"
+    />
+
+    <p-button
+      label="Nuevo vehículo"
+      icon="pi pi-plus"
+      severity="primary"
+      [routerLink]="['nuevo']"
+    />
+  </div>
 </div>
 
-<section class="card filters-card">
+<p-card class="filters-card">
   <div class="filters-card__header">
     <div>
       <h2>Buscar y filtrar</h2>
@@ -27,6 +49,7 @@
         <input
           id="vehicle-search"
           class="input search__input"
+          pInputText
           type="search"
           placeholder="Placa, marca, modelo o VIN…"
           [value]="filters().search"
@@ -37,99 +60,86 @@
 
     <div class="field">
       <label class="field__label" for="vehicle-type">Tipo</label>
-      <select
-        id="vehicle-type"
-        class="select"
+      <p-select
+        inputId="vehicle-type"
+        [options]="typeOptions()"
+        optionLabel="label"
+        optionValue="value"
         [ngModel]="filters().type"
         name="type"
         (ngModelChange)="patchFilters({ type: $event })"
-      >
-        <option value="">Todos</option>
-        @for (option of metadata()?.types ?? []; track option.value) {
-          <option [value]="option.value">{{ option.label }}</option>
-        }
-      </select>
+      />
     </div>
 
     <div class="field">
       <label class="field__label" for="vehicle-fuel">Combustible</label>
-      <select
-        id="vehicle-fuel"
-        class="select"
+      <p-select
+        inputId="vehicle-fuel"
+        [options]="fuelTypeOptions()"
+        optionLabel="label"
+        optionValue="value"
         [ngModel]="filters().fuel_type"
         name="fuel_type"
         (ngModelChange)="patchFilters({ fuel_type: $event })"
-      >
-        <option value="">Todos</option>
-        @for (option of metadata()?.fuel_types ?? []; track option.value) {
-          <option [value]="option.value">{{ option.label }}</option>
-        }
-      </select>
+      />
     </div>
 
     <div class="field">
       <label class="field__label" for="vehicle-brand">Marca</label>
-      <select
-        id="vehicle-brand"
-        class="select"
+      <p-select
+        inputId="vehicle-brand"
+        [options]="metadata()?.brands ?? []"
+        placeholder="Todas"
         [ngModel]="filters().brand"
         name="brand"
-        (ngModelChange)="patchFilters({ brand: $event })"
-      >
-        <option value="">Todas</option>
-        @for (brand of metadata()?.brands ?? []; track brand) {
-          <option [value]="brand">{{ brand }}</option>
-        }
-      </select>
+        (ngModelChange)="patchFilters({ brand: $event ?? '' })"
+      />
     </div>
 
     <div class="field">
       <label class="field__label" for="vehicle-year-from">Año desde</label>
-      <input
-        id="vehicle-year-from"
-        class="input"
-        type="number"
-        inputmode="numeric"
+      <p-inputnumber
+        inputId="vehicle-year-from"
+        [useGrouping]="false"
+        [showButtons]="false"
         placeholder="1900"
-        [ngModel]="filters().year_from"
+        [ngModel]="filters().year_from === '' ? null : +filters().year_from"
         name="year_from"
-        (ngModelChange)="patchFilters({ year_from: $event })"
+        (ngModelChange)="onYearChange('year_from', $event)"
       />
     </div>
 
     <div class="field">
       <label class="field__label" for="vehicle-year-to">Año hasta</label>
-      <input
-        id="vehicle-year-to"
-        class="input"
-        type="number"
-        inputmode="numeric"
-        [placeholder]="metadata()?.year_range?.max ?? ''"
-        [ngModel]="filters().year_to"
+      <p-inputnumber
+        inputId="vehicle-year-to"
+        [useGrouping]="false"
+        [showButtons]="false"
+        [placeholder]="'' + (metadata()?.year_range?.max ?? '')"
+        [ngModel]="filters().year_to === '' ? null : +filters().year_to"
         name="year_to"
-        (ngModelChange)="patchFilters({ year_to: $event })"
+        (ngModelChange)="onYearChange('year_to', $event)"
       />
     </div>
 
     <div class="field">
       <label class="field__label" for="vehicle-status">Estado</label>
-      <select
-        id="vehicle-status"
-        class="select"
+      <p-select
+        inputId="vehicle-status"
+        [options]="statusOptions"
+        optionLabel="label"
+        optionValue="value"
         [ngModel]="filters().is_active"
         name="is_active"
         (ngModelChange)="patchFilters({ is_active: $event })"
-      >
-        <option value="">Todos</option>
-        <option value="1">Activos</option>
-        <option value="0">Inactivos</option>
-      </select>
+      />
     </div>
 
     <div class="filters__toggles">
       <label class="checkbox">
-        <input
-          type="checkbox"
+        <p-checkbox
+          inputId="vehicle-with-trashed"
+          [binary]="true"
           [ngModel]="filters().with_trashed"
           name="with_trashed"
           (ngModelChange)="patchFilters({ with_trashed: $event })"
@@ -138,10 +148,7 @@
       </label>
 
       @if (hasFilters()) {
-        <button type="button" class="btn btn--link btn--sm" (click)="resetFilters()">
-          <app-icon name="close" [size]="14" />
-          Limpiar filtros
-        </button>
+        <p-button severity="secondary" [text]="true" size="small" icon="pi pi-times" label="Limpiar filtros" (onClick)="resetFilters()" />
       }
     </div>
   </form>
@@ -159,23 +166,18 @@
       "
     >
       @if (hasFilters()) {
-        <button type="button" class="btn btn--ghost" (click)="resetFilters()">
-          Limpiar filtros
-        </button>
+        <p-button severity="secondary" [outlined]="true" label="Limpiar filtros" (onClick)="resetFilters()" />
       } @else {
-        <a class="btn btn--primary" routerLink="nuevo">
-          <app-icon name="plus" [size]="16" />
-          Registrar el primero
-        </a>
+        <p-button severity="primary" icon="pi pi-plus" label="Registrar el primero" routerLink="nuevo" />
       }
     </app-empty-state>
   } @else {
     <div class="table-wrap" [class.is-loading]="loading()">
-      <table class="table">
-        <caption class="visually-hidden">
-          Listado de vehículos registrados
-        </caption>
-        <thead>
+      <p-table [value]="items()" dataKey="id" styleClass="p-datatable-sm" [rowHover]="true">
+        <ng-template #caption>
+          <span class="visually-hidden">Listado de vehículos registrados</span>
+        </ng-template>
+        <ng-template #header>
           <tr>
             <th class="is-sortable" (click)="sortBy('plate')">
               <span class="th-label">
@@ -213,62 +215,76 @@
             <th>Estado</th>
             <th class="cell-actions">Acciones</th>
           </tr>
-        </thead>
+        </ng-template>
 
-        <tbody>
-          @for (vehicle of items(); track vehicle.id) {
-            <tr [class.is-trashed]="vehicle.deleted_at">
-              <td>
-                <span class="plate">{{ vehicle.plate }}</span>
-              </td>
-              <td>
-                <span class="cell-title">{{ vehicle.brand }} {{ vehicle.model }}</span>
-                <span class="cell-sub">{{ vehicle.color ?? 'Sin color' }}</span>
-              </td>
-              <td>{{ vehicle.year }}</td>
-              <td>
-                <span class="cell-title">{{ vehicle.type_label }}</span>
-                <span class="cell-sub">{{ vehicle.fuel_type_label }}</span>
-              </td>
-              <td>{{ vehicle.mileage.toLocaleString('es') }} km</td>
-              <td>
+        <ng-template #body let-vehicle>
+          <tr [class.is-trashed]="vehicle.deleted_at">
+            <td>
+              <span class="plate">{{ vehicle.plate }}</span>
+            </td>
+            <td>
+              <span class="cell-title">{{ vehicle.brand }} {{ vehicle.model }}</span>
+              <span class="cell-sub">{{ vehicle.color ?? 'Sin color' }}</span>
+            </td>
+            <td>{{ vehicle.year }}</td>
+            <td>
+              <span class="cell-title">{{ vehicle.type_label }}</span>
+              <span class="cell-sub">{{ vehicle.fuel_type_label }}</span>
+            </td>
+            <td>{{ vehicle.mileage.toLocaleString('es') }} km</td>
+            <td>
+              @if (vehicle.deleted_at) {
+                <p-tag severity="warn" value="Eliminado" />
+              } @else if (vehicle.is_active) {
+                <p-tag severity="success" value="Activo" />
+              } @else {
+                <p-tag severity="secondary" value="Inactivo" />
+              }
+            </td>
+            <td class="cell-actions">
+              <div class="row-actions">
                 @if (vehicle.deleted_at) {
-                  <span class="badge badge--warning">Eliminado</span>
-                } @else if (vehicle.is_active) {
-                  <span class="badge badge--success">Activo</span>
+                  <p-button
+                    severity="secondary"
+                    [text]="true"
+                    size="small"
+                    icon="pi pi-refresh"
+                    label="Restaurar"
+                    (onClick)="restore(vehicle)"
+                  />
                 } @else {
-                  <span class="badge">Inactivo</span>
+                  <p-button
+                    severity="secondary"
+                    [text]="true"
+                    size="small"
+                    icon="pi pi-eye"
+                    pTooltip="Ver"
+                    [routerLink]="[vehicle.id]"
+                  />
+                  <p-button
+                    severity="secondary"
+                    [text]="true"
+                    size="small"
+                    icon="pi pi-pencil"
+                    pTooltip="Editar"
+                    [routerLink]="[vehicle.id, 'editar']"
+                  />
+                  <p-button
+                    severity="danger"
+                    [text]="true"
+                    size="small"
+                    icon="pi pi-trash"
+                    pTooltip="Eliminar"
+                    (onClick)="remove(vehicle)"
+                  />
                 }
-              </td>
-              <td class="cell-actions">
-                <div class="row-actions">
-                  @if (vehicle.deleted_at) {
-                    <button type="button" class="btn btn--ghost btn--sm" (click)="restore(vehicle)">
-                      <app-icon name="restore" [size]="15" />
-                      Restaurar
-                    </button>
-                  } @else {
-                    <a class="btn btn--ghost btn--sm" [routerLink]="[vehicle.id]">
-                      <app-icon name="eye" [size]="15" />
-                      Ver
-                    </a>
-                    <a class="btn btn--ghost btn--sm" [routerLink]="[vehicle.id, 'editar']">
-                      <app-icon name="pencil" [size]="15" />
-                      Editar
-                    </a>
-                    <button type="button" class="btn btn--ghost btn--sm" (click)="remove(vehicle)">
-                      <app-icon name="trash" [size]="15" />
-                      Eliminar
-                    </button>
-                  }
-                </div>
-              </td>
-            </tr>
-          }
-        </tbody>
-      </table>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
     </div>
 
     <app-pagination [meta]="meta()" (pageChange)="goToPage($event)" />
   }
-</section>
+</p-card>

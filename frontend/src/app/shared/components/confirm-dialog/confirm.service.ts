@@ -1,4 +1,5 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
+import { ConfirmationService } from 'primeng/api';
 
 export interface ConfirmOptions {
   title: string;
@@ -8,10 +9,6 @@ export interface ConfirmOptions {
   danger?: boolean;
 }
 
-interface PendingConfirm extends ConfirmOptions {
-  resolve: (accepted: boolean) => void;
-}
-
 /**
  * Diálogo de confirmación con API de promesa:
  *
@@ -19,24 +16,31 @@ interface PendingConfirm extends ConfirmOptions {
  * if (await this.confirm.ask({ title: '…', message: '…' })) { … }
  * ```
  *
- * El componente que lo pinta (`ConfirmDialogComponent`) vive una sola vez en
- * el shell de la aplicación.
+ * Se pinta con `p-confirmdialog`, montado una sola vez en el shell de la
+ * aplicación (`app.html`).
  */
 @Injectable({ providedIn: 'root' })
 export class ConfirmService {
-  private readonly pending = signal<PendingConfirm | null>(null);
-
-  readonly current = this.pending.asReadonly();
+  private readonly confirmation = inject(ConfirmationService);
 
   ask(options: ConfirmOptions): Promise<boolean> {
     return new Promise<boolean>((resolve) => {
-      this.pending.set({ ...options, resolve });
+      this.confirmation.confirm({
+        header: options.title,
+        message: options.message,
+        acceptLabel: options.confirmLabel ?? 'Confirmar',
+        rejectLabel: options.cancelLabel ?? 'Cancelar',
+        icon: options.danger ? 'pi pi-exclamation-triangle' : 'pi pi-info-circle',
+        acceptButtonProps: {
+          severity: options.danger ? 'danger' : 'primary',
+        },
+        rejectButtonProps: {
+          severity: 'secondary',
+          outlined: true,
+        },
+        accept: () => resolve(true),
+        reject: () => resolve(false),
+      });
     });
-  }
-
-  respond(accepted: boolean): void {
-    const request = this.pending();
-    this.pending.set(null);
-    request?.resolve(accepted);
   }
 }

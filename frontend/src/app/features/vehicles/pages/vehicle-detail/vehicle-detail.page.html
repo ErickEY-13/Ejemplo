@@ -4,10 +4,7 @@
     <p>Consulta la información completa del vehículo registrado.</p>
   </div>
 
-  <a class="btn btn--ghost" routerLink="/vehiculos">
-    <app-icon name="arrow-left" [size]="16" />
-    Volver al listado
-  </a>
+  <p-button severity="secondary" [text]="true" icon="pi pi-arrow-left" label="Volver al listado" routerLink="/vehiculos" />
 </div>
 
 @if (loading()) {
@@ -35,21 +32,25 @@
       />
 
       <div class="detail-photo__actions">
-        <button
-          type="button"
-          class="btn btn--ghost btn--sm"
-          [disabled]="uploadingPhoto()"
-          (click)="photoInput.click()"
-        >
-          <app-icon name="plus" [size]="14" />
-          {{ uploadingPhoto() ? 'Subiendo…' : vehicle.photo_url ? 'Reemplazar foto' : 'Subir foto' }}
-        </button>
+        <p-button
+          severity="secondary"
+          [outlined]="true"
+          size="small"
+          icon="pi pi-plus"
+          [loading]="uploadingPhoto()"
+          [label]="uploadingPhoto() ? 'Subiendo…' : vehicle.photo_url ? 'Reemplazar foto' : 'Subir foto'"
+          (onClick)="photoInput.click()"
+        />
 
         @if (vehicle.photo_url) {
-          <button type="button" class="btn btn--ghost btn--sm" (click)="removePhoto()">
-            <app-icon name="trash" [size]="14" />
-            Quitar foto
-          </button>
+          <p-button
+            severity="danger"
+            [text]="true"
+            size="small"
+            icon="pi pi-trash"
+            label="Quitar foto"
+            (onClick)="removePhoto()"
+          />
         }
       </div>
 
@@ -65,11 +66,11 @@
 
       <div class="detail-info__status">
         @if (vehicle.deleted_at) {
-          <span class="badge badge--warning">Eliminado</span>
+          <p-tag severity="warn" value="Eliminado" />
         } @else if (vehicle.is_active) {
-          <span class="badge badge--success">Activo</span>
+          <p-tag severity="success" value="Activo" />
         } @else {
-          <span class="badge">Inactivo</span>
+          <p-tag severity="secondary" value="Inactivo" />
         }
       </div>
 
@@ -130,19 +131,16 @@
 
       <div class="detail-actions">
         @if (vehicle.deleted_at) {
-          <button type="button" class="btn btn--ghost" (click)="restore(vehicle)">
-            <app-icon name="restore" [size]="16" />
-            Restaurar
-          </button>
+          <p-button severity="secondary" [outlined]="true" icon="pi pi-refresh" label="Restaurar" (onClick)="restore(vehicle)" />
         } @else {
-          <a class="btn btn--ghost" [routerLink]="['/vehiculos', vehicle.id, 'editar']">
-            <app-icon name="pencil" [size]="16" />
-            Editar
-          </a>
-          <button type="button" class="btn btn--danger" (click)="remove(vehicle)">
-            <app-icon name="trash" [size]="16" />
-            Eliminar
-          </button>
+          <p-button
+            severity="secondary"
+            [outlined]="true"
+            icon="pi pi-pencil"
+            label="Editar"
+            [routerLink]="['/vehiculos', vehicle.id, 'editar']"
+          />
+          <p-button severity="danger" icon="pi pi-trash" label="Eliminar" (onClick)="remove(vehicle)" />
         }
       </div>
     </section>
@@ -171,7 +169,7 @@
             </div>
 
             @if (current.is_overdue) {
-              <span class="badge badge--danger">Atrasado</span>
+              <p-tag severity="danger" value="Atrasado" />
             }
           </div>
 
@@ -190,14 +188,22 @@
 
           <div class="detail-assignment__actions">
             @if (!showAssignForm()) {
-              <button type="button" class="btn btn--ghost btn--sm" (click)="showAssignForm.set(true)">
-                <app-icon name="pencil" [size]="14" />
-                Reasignar
-              </button>
-              <button type="button" class="btn btn--ghost btn--sm" (click)="unassign()">
-                <app-icon name="trash" [size]="14" />
-                Quitar asignación
-              </button>
+              <p-button
+                severity="secondary"
+                [text]="true"
+                size="small"
+                icon="pi pi-pencil"
+                label="Reasignar"
+                (onClick)="showAssignForm.set(true)"
+              />
+              <p-button
+                severity="danger"
+                [text]="true"
+                size="small"
+                icon="pi pi-trash"
+                label="Quitar asignación"
+                (onClick)="unassign()"
+              />
             }
           </div>
         </div>
@@ -210,6 +216,7 @@
             <input
               id="assignment-person"
               class="input"
+              pInputText
               type="search"
               placeholder="Nombre o documento…"
               [value]="personQuery()"
@@ -241,6 +248,7 @@
             <input
               id="assignment-return"
               class="input"
+              pInputText
               type="date"
               [min]="todayIso"
               [value]="expectedReturnAt()"
@@ -254,6 +262,7 @@
             <textarea
               id="assignment-notes"
               class="textarea"
+              pTextarea
               [value]="assignmentNotes()"
               (input)="assignmentNotes.set($any($event.target).value)"
             ></textarea>
@@ -261,18 +270,22 @@
 
           <div class="detail-assignment__form-actions">
             @if (assignment()) {
-              <button type="button" class="btn btn--ghost btn--sm" (click)="showAssignForm.set(false)">
-                Cancelar
-              </button>
+              <p-button
+                severity="secondary"
+                [outlined]="true"
+                size="small"
+                label="Cancelar"
+                (onClick)="showAssignForm.set(false)"
+              />
             }
-            <button
-              type="button"
-              class="btn btn--primary btn--sm"
+            <p-button
+              severity="primary"
+              size="small"
               [disabled]="!selectedPerson() || assigning()"
-              (click)="assign()"
-            >
-              {{ assigning() ? 'Guardando…' : assignment() ? 'Reasignar' : 'Asignar' }}
-            </button>
+              [loading]="assigning()"
+              [label]="assigning() ? 'Guardando…' : assignment() ? 'Reasignar' : 'Asignar'"
+              (onClick)="assign()"
+            />
           </div>
         </div>
       }

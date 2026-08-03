@@ -51,6 +51,32 @@ class VehicleController extends Controller
     }
 
     /**
+     * GET /api/vehicles/export/excel
+     */
+    public function exportExcel(IndexVehicleRequest $request)
+    {
+        $vehicles = $this->vehicles->getForExport($request->filters());
+
+        return \Maatwebsite\Excel\Facades\Excel::download(
+            new \App\Modules\Vehicles\Exports\VehiclesExport($vehicles),
+            'Flota.xlsx'
+        );
+    }
+
+    /**
+     * GET /api/vehicles/export/pdf
+     */
+    public function exportPdf(IndexVehicleRequest $request): Response
+    {
+        $vehicles = $this->vehicles->getForExport($request->filters());
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.vehicles-report', compact('vehicles'))
+            ->setPaper('a4', 'landscape');
+
+        return $pdf->download('Reporte_Vehiculos.pdf');
+    }
+
+    /**
      * POST /api/vehicles
      */
     public function store(StoreVehicleRequest $request): JsonResponse

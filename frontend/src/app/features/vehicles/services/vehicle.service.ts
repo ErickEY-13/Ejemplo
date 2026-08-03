@@ -1,8 +1,10 @@
+import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 
 import { ApiService, QueryParams } from '../../../core/api/api.service';
 import { Paginated } from '../../../core/api/api.types';
+import { environment } from '../../../../environments/environment';
 import { Vehicle, VehicleFilters, VehicleMetadata, VehiclePayload } from '../models/vehicle.model';
 
 /**
@@ -12,6 +14,7 @@ import { Vehicle, VehicleFilters, VehicleMetadata, VehiclePayload } from '../mod
 @Injectable({ providedIn: 'root' })
 export class VehicleService {
   private readonly api = inject(ApiService);
+  private readonly http = inject(HttpClient);
   private readonly resource = 'vehicles';
 
   list(filters: Partial<VehicleFilters>): Observable<Paginated<Vehicle>> {
@@ -51,5 +54,32 @@ export class VehicleService {
 
   deletePhoto(id: number | string): Observable<Vehicle> {
     return this.api.delete<Vehicle>(`${this.resource}/${id}/photo`);
+  }
+
+  // ---------------------------------------------------------------- Exportación Global
+
+  private cleanFilters(filters: Partial<VehicleFilters>): any {
+    const params: any = {};
+    Object.keys(filters).forEach(k => {
+      const v = (filters as any)[k];
+      if (v !== null && v !== undefined && v !== '') {
+        params[k] = typeof v === 'boolean' ? (v ? '1' : '0') : String(v);
+      }
+    });
+    return params;
+  }
+
+  exportExcel(filters: Partial<VehicleFilters>): Observable<Blob> {
+    return this.http.get(`${environment.apiUrl}/${this.resource}/export/excel`, {
+      params: this.cleanFilters(filters),
+      responseType: 'blob'
+    });
+  }
+
+  exportPdf(filters: Partial<VehicleFilters>): Observable<Blob> {
+    return this.http.get(`${environment.apiUrl}/${this.resource}/export/pdf`, {
+      params: this.cleanFilters(filters),
+      responseType: 'blob'
+    });
   }
 }

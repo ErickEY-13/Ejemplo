@@ -7,29 +7,42 @@
 
   <div class="page-header__actions" style="display: flex; gap: var(--sp-2);">
     <input type="file" #fileInput accept=".csv,.txt" style="display: none" (change)="onFileSelected($event)">
-    <button class="btn btn--secondary" (click)="triggerFileInput(fileInput)" [disabled]="importing()">
-      <app-icon name="upload" [size]="16" />
-      Importar CSV
-    </button>
+    <p-button
+      severity="secondary"
+      icon="pi pi-upload"
+      [loading]="importing()"
+      (onClick)="triggerFileInput(fileInput)"
+      label="Importar CSV"
+    />
 
-    <button class="btn btn--secondary" (click)="exportExcel()" [disabled]="exportingExcel() || items().length === 0">
-      <app-icon name="file-text" [size]="16" />
-      {{ exportingExcel() ? 'Exportando...' : 'Excel' }}
-    </button>
-    
-    <button class="btn btn--secondary" (click)="exportPdf()" [disabled]="exportingPdf() || items().length === 0">
-      <app-icon name="file" [size]="16" />
-      {{ exportingPdf() ? 'Exportando...' : 'PDF' }}
-    </button>
+    <p-button
+      severity="secondary"
+      icon="pi pi-file"
+      [loading]="exportingExcel()"
+      [disabled]="items().length === 0"
+      (onClick)="exportExcel()"
+      [label]="exportingExcel() ? 'Exportando...' : 'Excel'"
+    />
 
-    <a class="btn btn--primary" routerLink="nueva">
-      <app-icon name="plus" [size]="16" />
-      Nueva persona
-    </a>
+    <p-button
+      severity="secondary"
+      icon="pi pi-file-pdf"
+      [loading]="exportingPdf()"
+      [disabled]="items().length === 0"
+      (onClick)="exportPdf()"
+      [label]="exportingPdf() ? 'Exportando...' : 'PDF'"
+    />
+
+    <p-button
+      severity="primary"
+      icon="pi pi-plus"
+      [routerLink]="['nueva']"
+      label="Nueva persona"
+    />
   </div>
 </div>
 
-<section class="card filters-card">
+<p-card class="filters-card">
   <div class="filters-card__header">
     <div>
       <h2>Buscar y filtrar</h2>
@@ -45,6 +58,7 @@
         <input
           id="person-search"
           class="input search__input"
+          pInputText
           type="search"
           placeholder="Nombre, apellido, documento o correo…"
           [value]="filters().search"
@@ -55,86 +69,72 @@
 
     <div class="field">
       <label class="field__label" for="person-document-type">Tipo de documento</label>
-      <select
-        id="person-document-type"
-        class="select"
+      <p-select
+        inputId="person-document-type"
+        [options]="documentTypeOptions()"
+        optionLabel="label"
+        optionValue="value"
         [ngModel]="filters().document_type"
         name="document_type"
         (ngModelChange)="patchFilters({ document_type: $event })"
-      >
-        <option value="">Todos</option>
-        @for (option of metadata()?.document_types ?? []; track option.value) {
-          <option [value]="option.value">{{ option.label }}</option>
-        }
-      </select>
+      />
     </div>
 
     <div class="field">
       <label class="field__label" for="person-area">Área</label>
-      <select
-        id="person-area"
-        class="select"
+      <p-select
+        inputId="person-area"
+        [options]="areaOptions()"
+        optionLabel="label"
+        optionValue="value"
         [ngModel]="filters().area"
         name="area"
         (ngModelChange)="patchFilters({ area: $event })"
-      >
-        <option value="">Todas</option>
-        @for (option of metadata()?.areas ?? []; track option.value) {
-          <option [value]="option.value">{{ option.label }}</option>
-        }
-      </select>
+      />
     </div>
 
     <div class="field">
       <label class="field__label" for="person-contract-type">Contrato</label>
-      <select
-        id="person-contract-type"
-        class="select"
+      <p-select
+        inputId="person-contract-type"
+        [options]="contractTypeOptions()"
+        optionLabel="label"
+        optionValue="value"
         [ngModel]="filters().contract_type"
         name="contract_type"
         (ngModelChange)="patchFilters({ contract_type: $event })"
-      >
-        <option value="">Todos</option>
-        @for (option of metadata()?.contract_types ?? []; track option.value) {
-          <option [value]="option.value">{{ option.label }}</option>
-        }
-      </select>
+      />
     </div>
 
     <div class="field">
       <label class="field__label" for="person-status">Estado</label>
-      <select
-        id="person-status"
-        class="select"
+      <p-select
+        inputId="person-status"
+        [options]="statusOptions"
+        optionLabel="label"
+        optionValue="value"
         [ngModel]="filters().is_active"
         name="is_active"
         (ngModelChange)="patchFilters({ is_active: $event })"
-      >
-        <option value="">Todos</option>
-        <option value="1">Activas</option>
-        <option value="0">Inactivas</option>
-      </select>
+      />
     </div>
 
     <div class="field">
       <label class="field__label" for="person-per-page">Por página</label>
-      <select
-        id="person-per-page"
-        class="select"
+      <p-select
+        inputId="person-per-page"
+        [options]="perPageOptions"
         [ngModel]="filters().per_page"
         name="per_page"
-        (ngModelChange)="patchFilters({ per_page: +$event })"
-      >
-        @for (size of [15, 25, 50, 100]; track size) {
-          <option [value]="size">{{ size }}</option>
-        }
-      </select>
+        (ngModelChange)="patchFilters({ per_page: $event })"
+      />
     </div>
 
     <div class="filters__toggles">
       <label class="checkbox">
-        <input
-          type="checkbox"
+        <p-checkbox
+          inputId="person-with-trashed"
+          [binary]="true"
           [ngModel]="filters().with_trashed"
           name="with_trashed"
           (ngModelChange)="patchFilters({ with_trashed: $event })"
@@ -143,10 +143,7 @@
       </label>
 
       @if (hasFilters()) {
-        <button type="button" class="btn btn--link btn--sm" (click)="resetFilters()">
-          <app-icon name="close" [size]="14" />
-          Limpiar filtros
-        </button>
+        <p-button severity="secondary" [text]="true" size="small" icon="pi pi-times" label="Limpiar filtros" (onClick)="resetFilters()" />
       }
     </div>
   </form>
@@ -164,14 +161,9 @@
       "
     >
       @if (hasFilters()) {
-        <button type="button" class="btn btn--ghost" (click)="resetFilters()">
-          Limpiar filtros
-        </button>
+        <p-button severity="secondary" [outlined]="true" label="Limpiar filtros" (onClick)="resetFilters()" />
       } @else {
-        <a class="btn btn--primary" routerLink="nueva">
-          <app-icon name="plus" [size]="16" />
-          Registrar la primera
-        </a>
+        <p-button severity="primary" icon="pi pi-plus" label="Registrar la primera" routerLink="nueva" />
       }
     </app-empty-state>
   } @else {
@@ -181,18 +173,19 @@
           <strong>Importando registros en segundo plano...</strong>
           <span>{{ importProgress() }} de {{ importTotal() || '?' }} completados</span>
         </div>
-        <div class="progress-bar">
-          <div class="progress-bar__fill" [style.width.%]="importTotal() ? (importProgress() / importTotal()) * 100 : 0"></div>
-        </div>
+        <p-progressbar
+          [value]="importTotal() ? (importProgress() / importTotal()) * 100 : 0"
+          [showValue]="false"
+        />
       </div>
     }
 
     <div class="table-wrap" [class.is-loading]="loading()">
-      <table class="table">
-        <caption class="visually-hidden">
-          Listado de personas registradas
-        </caption>
-        <thead>
+      <p-table [value]="items()" dataKey="id" styleClass="p-datatable-sm" [rowHover]="true">
+        <ng-template #caption>
+          <span class="visually-hidden">Listado de personas registradas</span>
+        </ng-template>
+        <ng-template #header>
           <tr>
             <th class="is-sortable" (click)="sortBy('last_name')">
               <span class="th-label">
@@ -223,79 +216,92 @@
             <th>Estado</th>
             <th class="cell-actions">Acciones</th>
           </tr>
-        </thead>
+        </ng-template>
 
-        <tbody>
-          @for (person of items(); track person.id) {
-            <tr [class.is-trashed]="person.deleted_at">
-              <td>
-                <div class="person-cell">
-                  <div class="person-avatar" [class.person-avatar--has-photo]="person.photo_url">
-                    @if (person.photo_url) {
-                      <img [src]="person.photo_url" [alt]="person.full_name" class="person-avatar__img" />
-                    } @else {
-                      <span class="person-avatar__initials">{{ getInitials(person) }}</span>
-                    }
-                  </div>
-                  <div>
-                    <span class="cell-title">{{ person.full_name }}</span>
-                    <span class="cell-sub">
-                      {{ person.gender_label }}
-                      @if (person.site_label) {
-                        · <app-icon name="map-pin" [size]="11" /> {{ person.site_label }}
-                      }
-                    </span>
-                  </div>
-                </div>
-              </td>
-              <td>
-                <span class="cell-title">{{ person.document_number }}</span>
-                <span class="cell-sub">{{ person.document_type_label }}</span>
-              </td>
-              <td>
-                @if (person.area_label || person.position) {
-                  <span class="cell-title">{{ person.area_label ?? '—' }}</span>
-                  <span class="cell-sub">{{ person.position ?? 'Sin cargo' }}{{ person.contract_type_label ? ' · ' + person.contract_type_label : '' }}</span>
-                } @else {
-                  <span class="cell-muted">—</span>
-                }
-              </td>
-              <td>
-                <span class="cell-title">{{ person.email ?? '—' }}</span>
-                <span class="cell-sub">{{ person.phone ?? 'Sin teléfono' }}</span>
-              </td>
-              <td>{{ person.age !== null ? person.age + ' años' : '—' }}</td>
-              <td>
-                @if (person.deleted_at) {
-                  <span class="badge badge--warning">Eliminada</span>
-                } @else if (person.is_active) {
-                  <span class="badge badge--success">Activa</span>
-                } @else {
-                  <span class="badge">Inactiva</span>
-                }
-              </td>
-              <td class="cell-actions">
-                <div class="row-actions">
-                  @if (person.deleted_at) {
-                    <button type="button" class="btn btn--ghost btn--sm" (click)="restore(person)" title="Restaurar">
-                      <app-icon name="restore" [size]="15" />
-                    </button>
+        <ng-template #body let-person>
+          <tr [class.is-trashed]="person.deleted_at">
+            <td>
+              <div class="person-cell">
+                <div class="person-avatar" [class.person-avatar--has-photo]="person.photo_url">
+                  @if (person.photo_url) {
+                    <img [src]="person.photo_url" [alt]="person.full_name" class="person-avatar__img" />
                   } @else {
-                    <a class="btn btn--ghost btn--sm" [routerLink]="[person.id, 'editar']" title="Editar">
-                      <app-icon name="pencil" [size]="15" />
-                    </a>
-                    <button type="button" class="btn btn--ghost btn--sm" (click)="remove(person)" title="Eliminar">
-                      <app-icon name="trash" [size]="15" />
-                    </button>
+                    <span class="person-avatar__initials">{{ getInitials(person) }}</span>
                   }
                 </div>
-              </td>
-            </tr>
-          }
-        </tbody>
-      </table>
+                <div>
+                  <span class="cell-title">{{ person.full_name }}</span>
+                  <span class="cell-sub">
+                    {{ person.gender_label }}
+                    @if (person.site_label) {
+                      · <app-icon name="map-pin" [size]="11" /> {{ person.site_label }}
+                    }
+                  </span>
+                </div>
+              </div>
+            </td>
+            <td>
+              <span class="cell-title">{{ person.document_number }}</span>
+              <span class="cell-sub">{{ person.document_type_label }}</span>
+            </td>
+            <td>
+              @if (person.area_label || person.position) {
+                <span class="cell-title">{{ person.area_label ?? '—' }}</span>
+                <span class="cell-sub">{{ person.position ?? 'Sin cargo' }}{{ person.contract_type_label ? ' · ' + person.contract_type_label : '' }}</span>
+              } @else {
+                <span class="cell-muted">—</span>
+              }
+            </td>
+            <td>
+              <span class="cell-title">{{ person.email ?? '—' }}</span>
+              <span class="cell-sub">{{ person.phone ?? 'Sin teléfono' }}</span>
+            </td>
+            <td>{{ person.age !== null ? person.age + ' años' : '—' }}</td>
+            <td>
+              @if (person.deleted_at) {
+                <p-tag severity="warn" value="Eliminada" />
+              } @else if (person.is_active) {
+                <p-tag severity="success" value="Activa" />
+              } @else {
+                <p-tag severity="secondary" value="Inactiva" />
+              }
+            </td>
+            <td class="cell-actions">
+              <div class="row-actions">
+                @if (person.deleted_at) {
+                  <p-button
+                    severity="secondary"
+                    [text]="true"
+                    size="small"
+                    icon="pi pi-refresh"
+                    pTooltip="Restaurar"
+                    (onClick)="restore(person)"
+                  />
+                } @else {
+                  <p-button
+                    severity="secondary"
+                    [text]="true"
+                    size="small"
+                    icon="pi pi-pencil"
+                    pTooltip="Editar"
+                    [routerLink]="[person.id, 'editar']"
+                  />
+                  <p-button
+                    severity="danger"
+                    [text]="true"
+                    size="small"
+                    icon="pi pi-trash"
+                    pTooltip="Eliminar"
+                    (onClick)="remove(person)"
+                  />
+                }
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
     </div>
 
     <app-pagination [meta]="meta()" (pageChange)="goToPage($event)" />
   }
-</section>
+</p-card>

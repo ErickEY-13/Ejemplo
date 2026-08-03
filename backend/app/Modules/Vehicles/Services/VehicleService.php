@@ -30,6 +30,15 @@ class VehicleService
     }
 
     /**
+     * @param  array<string, mixed>  $filters
+     * @return \Illuminate\Database\Eloquent\Collection<int, Vehicle>
+     */
+    public function getForExport(array $filters = []): \Illuminate\Database\Eloquent\Collection
+    {
+        return $this->query($filters)->get();
+    }
+
+    /**
      * @param  array<string, mixed>  $data
      */
     public function create(array $data): Vehicle

@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
+import { ButtonModule } from 'primeng/button';
 
 import { PaginationMeta } from '../../../core/api/api.types';
-import { IconComponent } from '../icon/icon';
 
 /**
  * Paginador reutilizable. Recibe el `meta` que devuelve Laravel y emite el
@@ -10,7 +10,7 @@ import { IconComponent } from '../icon/icon';
 @Component({
   selector: 'app-pagination',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [IconComponent],
+  imports: [ButtonModule],
   template: `
     @if (meta().total > 0) {
       <nav class="pagination" aria-label="Paginación">
@@ -20,42 +20,41 @@ import { IconComponent } from '../icon/icon';
         </p>
 
         <div class="pagination__controls">
-          <button
-            type="button"
-            class="btn btn--ghost btn--sm"
+          <p-button
+            severity="secondary"
+            [outlined]="true"
+            size="small"
+            icon="pi pi-chevron-left"
+            label="Anterior"
             [disabled]="isFirst()"
-            (click)="pageChange.emit(meta().current_page - 1)"
-          >
-            <app-icon name="chevron-left" [size]="15" />
-            Anterior
-          </button>
+            (onClick)="pageChange.emit(meta().current_page - 1)"
+          />
 
           @for (page of pages(); track page) {
             @if (page === null) {
               <span class="pagination__gap" aria-hidden="true">…</span>
             } @else {
-              <button
-                type="button"
-                class="btn btn--sm"
-                [class.btn--primary]="page === meta().current_page"
-                [class.btn--ghost]="page !== meta().current_page"
+              <p-button
+                size="small"
+                [label]="'' + page"
+                [severity]="page === meta().current_page ? 'primary' : 'secondary'"
+                [outlined]="page !== meta().current_page"
                 [attr.aria-current]="page === meta().current_page ? 'page' : null"
-                (click)="pageChange.emit(page)"
-              >
-                {{ page }}
-              </button>
+                (onClick)="pageChange.emit(page)"
+              />
             }
           }
 
-          <button
-            type="button"
-            class="btn btn--ghost btn--sm"
+          <p-button
+            severity="secondary"
+            [outlined]="true"
+            size="small"
+            iconPos="right"
+            icon="pi pi-chevron-right"
+            label="Siguiente"
             [disabled]="isLast()"
-            (click)="pageChange.emit(meta().current_page + 1)"
-          >
-            Siguiente
-            <app-icon name="chevron-right" [size]="15" />
-          </button>
+            (onClick)="pageChange.emit(meta().current_page + 1)"
+          />
         </div>
       </nav>
     }

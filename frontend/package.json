@@ -19,6 +19,11 @@
     "@angular/platform-browser": "^22.1.0",
     "@angular/router": "^22.1.0",
     "@ngrx/signals": "^21.1.1",
+    "@primeng/themes": "^21.0.4",
+    "@primeuix/themes": "^2.0.3",
+    "primeflex": "^3.2.1",
+    "primeicons": "^8.0.0",
+    "primeng": "^22.0.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0"
   },

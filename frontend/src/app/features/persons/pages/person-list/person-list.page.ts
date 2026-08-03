@@ -1,9 +1,18 @@
-import { ChangeDetectionStrategy, Component, inject, signal, DestroyRef } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { Subject, of, timer } from 'rxjs';
 import { catchError, debounceTime, distinctUntilChanged, switchMap, tap, takeWhile } from 'rxjs/operators';
+import { ButtonModule } from 'primeng/button';
+import { CardModule } from 'primeng/card';
+import { CheckboxModule } from 'primeng/checkbox';
+import { InputTextModule } from 'primeng/inputtext';
+import { ProgressBarModule } from 'primeng/progressbar';
+import { SelectModule } from 'primeng/select';
+import { TableModule } from 'primeng/table';
+import { TagModule } from 'primeng/tag';
+import { TooltipModule } from 'primeng/tooltip';
 
 import { Paginated } from '../../../../core/api/api.types';
 import { NotificationService } from '../../../../core/notifications/notification.service';
@@ -31,6 +40,15 @@ import { PersonStore } from '../../store/person.store';
     PaginationComponent,
     SpinnerComponent,
     EmptyStateComponent,
+    ButtonModule,
+    CardModule,
+    CheckboxModule,
+    InputTextModule,
+    ProgressBarModule,
+    SelectModule,
+    TableModule,
+    TagModule,
+    TooltipModule,
   ],
   templateUrl: './person-list.page.html',
   styleUrl: './person-list.page.scss',
@@ -47,6 +65,25 @@ export class PersonListPage {
   protected readonly meta = this.store.meta;
   protected readonly metadata = this.store.metadata;
   protected readonly hasFilters = this.store.hasFilters;
+
+  protected readonly documentTypeOptions = computed(() => [
+    { value: '', label: 'Todos' },
+    ...(this.metadata()?.document_types ?? []),
+  ]);
+  protected readonly areaOptions = computed(() => [
+    { value: '', label: 'Todas' },
+    ...(this.metadata()?.areas ?? []),
+  ]);
+  protected readonly contractTypeOptions = computed(() => [
+    { value: '', label: 'Todos' },
+    ...(this.metadata()?.contract_types ?? []),
+  ]);
+  protected readonly statusOptions = [
+    { value: '', label: 'Todos' },
+    { value: '1', label: 'Activas' },
+    { value: '0', label: 'Inactivas' },
+  ];
+  protected readonly perPageOptions = [15, 25, 50, 100];
 
   /** Texto del buscador, con retardo para no lanzar una petición por tecla. */
   private readonly searchTerm = new Subject<string>();

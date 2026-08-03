@@ -18,6 +18,8 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('metadata', [VehicleController::class, 'metadata'])->name('metadata');
+Route::get('export/excel', [VehicleController::class, 'exportExcel'])->name('export.excel');
+Route::get('export/pdf', [VehicleController::class, 'exportPdf'])->name('export.pdf');
 
 Route::get('/', [VehicleController::class, 'index'])->name('index');
 Route::post('/', [VehicleController::class, 'store'])->name('store');

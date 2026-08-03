@@ -4,10 +4,17 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
+import { ButtonModule } from 'primeng/button';
+import { CardModule } from 'primeng/card';
+import { CheckboxModule } from 'primeng/checkbox';
+import { InputNumberModule } from 'primeng/inputnumber';
+import { InputTextModule } from 'primeng/inputtext';
+import { MessageModule } from 'primeng/message';
+import { SelectModule } from 'primeng/select';
+import { TextareaModule } from 'primeng/textarea';
 
 import { ApiError } from '../../../../core/api/api.types';
 import { NotificationService } from '../../../../core/notifications/notification.service';
-import { IconComponent } from '../../../../shared/components/icon/icon';
 import { SpinnerComponent } from '../../../../shared/components/spinner/spinner';
 import { applyServerErrors, firstErrorMessage } from '../../../../shared/forms/server-errors';
 import { VehicleMetadata, VehiclePayload } from '../../models/vehicle.model';
@@ -22,7 +29,19 @@ const CURRENT_YEAR = new Date().getFullYear();
 @Component({
   selector: 'app-vehicle-form',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ReactiveFormsModule, RouterLink, IconComponent, SpinnerComponent],
+  imports: [
+    ReactiveFormsModule,
+    RouterLink,
+    SpinnerComponent,
+    ButtonModule,
+    CardModule,
+    CheckboxModule,
+    InputNumberModule,
+    InputTextModule,
+    MessageModule,
+    SelectModule,
+    TextareaModule,
+  ],
   templateUrl: './vehicle-form.page.html',
   styleUrl: './vehicle-form.page.scss',
 })

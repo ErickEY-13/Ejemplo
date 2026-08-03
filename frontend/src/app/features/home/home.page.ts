@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { TagModule } from 'primeng/tag';
 
 import { environment } from '../../../environments/environment';
 import { APP_MODULES } from '../../core/navigation/modules';
@@ -11,7 +12,7 @@ import { IconComponent } from '../../shared/components/icon/icon';
 @Component({
   selector: 'app-home',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, IconComponent],
+  imports: [RouterLink, IconComponent, TagModule],
   templateUrl: './home.page.html',
   styleUrl: './home.page.scss',
 })

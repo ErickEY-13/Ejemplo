@@ -12,9 +12,9 @@ CURRENT_HASH=$(md5sum package-lock.json 2>/dev/null | cut -d' ' -f1 || echo "non
 if [ ! -d node_modules/@angular ] || [ "$(cat "$LOCK_HASH_FILE" 2>/dev/null)" != "$CURRENT_HASH" ]; then
     log "Instalando dependencias de npm (esto puede tardar unos minutos)..."
     if [ -f package-lock.json ]; then
-        npm ci
+        npm ci --legacy-peer-deps
     else
-        npm install
+        npm install --legacy-peer-deps
     fi
     echo "$CURRENT_HASH" > "$LOCK_HASH_FILE"
 else

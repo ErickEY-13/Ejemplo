@@ -4,10 +4,7 @@
     <p>Los campos marcados con <span class="field__required">*</span> son obligatorios.</p>
   </div>
 
-  <a class="btn btn--ghost" routerLink="/vehiculos">
-    <app-icon name="arrow-left" [size]="16" />
-    Volver al listado
-  </a>
+  <p-button severity="secondary" [text]="true" icon="pi pi-arrow-left" label="Volver al listado" routerLink="/vehiculos" />
 </div>
 
 @if (loading()) {
@@ -15,27 +12,25 @@
     <app-spinner label="Cargando datos del vehículo…" />
   </div>
 } @else {
-  <form class="card form" [formGroup]="form" (ngSubmit)="submit()" novalidate>
-    @if (generalErrors().length > 0) {
-      <div class="alert" role="alert">
-        <app-icon class="alert__icon" name="alert-circle" [size]="18" />
-        <div>
+  <p-card class="form-card">
+    <form class="form" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      @if (generalErrors().length > 0) {
+        <p-message severity="error" [closable]="false">
           <strong>No se pudo guardar:</strong>
-          <ul>
+          <ul class="form__error-list">
             @for (message of generalErrors(); track message) {
               <li>{{ message }}</li>
             }
           </ul>
-        </div>
+        </p-message>
+      }
+
+      <div class="form__intro">
+        <div class="form__intro-badge">Ficha completa</div>
+        <p>Completa los datos principales y deja la información lista para su consulta y mantenimiento.</p>
       </div>
-    }
 
-    <div class="form__intro">
-      <div class="form__intro-badge">Ficha completa</div>
-      <p>Completa los datos principales y deja la información lista para su consulta y mantenimiento.</p>
-    </div>
-
-    <fieldset class="form__section">
+      <fieldset class="form__section">
       <legend class="form__legend">Identificación</legend>
 
       <div class="form__grid">
@@ -44,6 +39,7 @@
           <input
             id="plate"
             class="input input--plate"
+            pInputText
             type="text"
             formControlName="plate"
             placeholder="ABC-123"
@@ -62,6 +58,7 @@
           <input
             id="vin"
             class="input"
+            pInputText
             type="text"
             formControlName="vin"
             maxlength="17"
@@ -77,7 +74,7 @@
 
         <div class="field">
           <label class="field__label" for="engine_number">Número de motor</label>
-          <input id="engine_number" class="input" type="text" formControlName="engine_number" />
+          <input id="engine_number" class="input" pInputText type="text" formControlName="engine_number" />
           @if (errorFor('engine_number', 'el número de motor'); as message) {
             <span class="field__error">{{ message }}</span>
           }
@@ -94,6 +91,7 @@
           <input
             id="brand"
             class="input"
+            pInputText
             type="text"
             formControlName="brand"
             list="vehicle-brands"
@@ -114,6 +112,7 @@
           <input
             id="model"
             class="input"
+            pInputText
             type="text"
             formControlName="model"
             [class.is-invalid]="!!errorFor('model', 'el modelo')"
@@ -125,14 +124,13 @@
 
         <div class="field">
           <label class="field__label" for="year">Año <span class="field__required">*</span></label>
-          <input
-            id="year"
-            class="input"
-            type="number"
-            inputmode="numeric"
-            min="1900"
-            [max]="maxYear"
+          <p-inputnumber
+            inputId="year"
             formControlName="year"
+            [min]="1900"
+            [max]="maxYear"
+            [useGrouping]="false"
+            [showButtons]="false"
             [class.is-invalid]="!!errorFor('year', 'el año')"
           />
           @if (errorFor('year', 'el año'); as message) {
@@ -144,11 +142,13 @@
           <label class="field__label" for="type">
             Tipo de vehículo <span class="field__required">*</span>
           </label>
-          <select id="type" class="select" formControlName="type">
-            @for (option of metadata()?.types ?? []; track option.value) {
-              <option [value]="option.value">{{ option.label }}</option>
-            }
-          </select>
+          <p-select
+            inputId="type"
+            formControlName="type"
+            [options]="metadata()?.types ?? []"
+            optionLabel="label"
+            optionValue="value"
+          />
           @if (errorFor('type', 'el tipo de vehículo'); as message) {
             <span class="field__error">{{ message }}</span>
           }
@@ -156,16 +156,18 @@
 
         <div class="field">
           <label class="field__label" for="fuel_type">Combustible</label>
-          <select id="fuel_type" class="select" formControlName="fuel_type">
-            @for (option of metadata()?.fuel_types ?? []; track option.value) {
-              <option [value]="option.value">{{ option.label }}</option>
-            }
-          </select>
+          <p-select
+            inputId="fuel_type"
+            formControlName="fuel_type"
+            [options]="metadata()?.fuel_types ?? []"
+            optionLabel="label"
+            optionValue="value"
+          />
         </div>
 
         <div class="field">
           <label class="field__label" for="color">Color</label>
-          <input id="color" class="input" type="text" formControlName="color" />
+          <input id="color" class="input" pInputText type="text" formControlName="color" />
           @if (errorFor('color', 'el color'); as message) {
             <span class="field__error">{{ message }}</span>
           }
@@ -173,13 +175,13 @@
 
         <div class="field">
           <label class="field__label" for="mileage">Kilometraje</label>
-          <input
-            id="mileage"
-            class="input"
-            type="number"
-            inputmode="numeric"
-            min="0"
+          <p-inputnumber
+            inputId="mileage"
             formControlName="mileage"
+            [min]="0"
+            [max]="9999999"
+            [useGrouping]="false"
+            [showButtons]="false"
             [class.is-invalid]="!!errorFor('mileage', 'el kilometraje')"
           />
           @if (errorFor('mileage', 'el kilometraje'); as message) {
@@ -195,7 +197,7 @@
       <div class="form__grid">
         <div class="field form__full">
           <label class="field__label" for="notes">Observaciones</label>
-          <textarea id="notes" class="textarea" formControlName="notes"></textarea>
+          <textarea id="notes" class="textarea" pInputTextarea formControlName="notes"></textarea>
           @if (errorFor('notes', 'las observaciones'); as message) {
             <span class="field__error">{{ message }}</span>
           }
@@ -204,7 +206,7 @@
         <div class="field">
           <span class="field__label">Estado</span>
           <label class="checkbox">
-            <input type="checkbox" formControlName="is_active" />
+            <p-checkbox formControlName="is_active" [binary]="true" />
             Vehículo activo
           </label>
           <span class="field__hint">Los vehículos inactivos se conservan pero quedan marcados.</span>
@@ -213,10 +215,9 @@
     </fieldset>
 
     <div class="form__actions">
-      <a class="btn btn--ghost" routerLink="/vehiculos">Cancelar</a>
-      <button type="submit" class="btn btn--primary" [disabled]="saving()">
-        {{ saving() ? 'Guardando…' : isEdit() ? 'Guardar cambios' : 'Registrar vehículo' }}
-      </button>
+      <p-button label="Cancelar" severity="secondary" [routerLink]="['/vehiculos']" />
+      <p-button type="submit" [loading]="saving()" [label]="saving() ? 'Guardando…' : isEdit() ? 'Guardar cambios' : 'Registrar vehículo'" severity="primary" />
     </div>
   </form>
+  </p-card>
 }

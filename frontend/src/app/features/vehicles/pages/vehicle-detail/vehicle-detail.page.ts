@@ -4,6 +4,10 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router, RouterLink } from '@angular/router';
 import { Subject, of } from 'rxjs';
 import { catchError, debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
+import { ButtonModule } from 'primeng/button';
+import { InputTextModule } from 'primeng/inputtext';
+import { TagModule } from 'primeng/tag';
+import { TextareaModule } from 'primeng/textarea';
 
 import { NotificationService } from '../../../../core/notifications/notification.service';
 import { ConfirmService } from '../../../../shared/components/confirm-dialog/confirm.service';
@@ -22,7 +26,16 @@ import { VehicleService } from '../../services/vehicle.service';
 @Component({
   selector: 'app-vehicle-detail',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, IconComponent, SpinnerComponent, DatePipe],
+  imports: [
+    RouterLink,
+    IconComponent,
+    SpinnerComponent,
+    DatePipe,
+    ButtonModule,
+    InputTextModule,
+    TagModule,
+    TextareaModule,
+  ],
   templateUrl: './vehicle-detail.page.html',
   styleUrl: './vehicle-detail.page.scss',
 })

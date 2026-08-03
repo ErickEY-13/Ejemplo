@@ -4,9 +4,20 @@ import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angu
 import { Router, RouterLink } from '@angular/router';
 import { forkJoin, of, Observable } from 'rxjs';
 import { catchError, switchMap } from 'rxjs/operators';
+import { ButtonModule } from 'primeng/button';
+import { CardModule } from 'primeng/card';
+import { CheckboxModule } from 'primeng/checkbox';
+import { InputNumberModule } from 'primeng/inputnumber';
+import { InputTextModule } from 'primeng/inputtext';
+import { MessageModule } from 'primeng/message';
+import { SelectModule } from 'primeng/select';
+import { TagModule } from 'primeng/tag';
+import { TextareaModule } from 'primeng/textarea';
+import { TooltipModule } from 'primeng/tooltip';
 
 import { ApiError } from '../../../../core/api/api.types';
 import { NotificationService } from '../../../../core/notifications/notification.service';
+import { ConfirmService } from '../../../../shared/components/confirm-dialog/confirm.service';
 import { IconComponent } from '../../../../shared/components/icon/icon';
 import { SpinnerComponent } from '../../../../shared/components/spinner/spinner';
 import { applyServerErrors, firstErrorMessage } from '../../../../shared/forms/server-errors';
@@ -22,7 +33,24 @@ import { DatePipe } from '@angular/common';
 @Component({
   selector: 'app-person-form',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ReactiveFormsModule, FormsModule, RouterLink, IconComponent, SpinnerComponent, DatePipe],
+  imports: [
+    ReactiveFormsModule,
+    FormsModule,
+    RouterLink,
+    IconComponent,
+    SpinnerComponent,
+    DatePipe,
+    ButtonModule,
+    CardModule,
+    CheckboxModule,
+    InputNumberModule,
+    InputTextModule,
+    MessageModule,
+    SelectModule,
+    TagModule,
+    TextareaModule,
+    TooltipModule,
+  ],
   templateUrl: './person-form.page.html',
   styleUrl: './person-form.page.scss',
 })
@@ -32,6 +60,7 @@ export class PersonFormPage {
 
   private readonly persons = inject(PersonService);
   private readonly notifications = inject(NotificationService);
+  private readonly confirm = inject(ConfirmService);
   private readonly router = inject(Router);
   private readonly fb = inject(FormBuilder);
 
@@ -259,9 +288,18 @@ export class PersonFormPage {
     input.value = '';
   }
 
-  protected removeDocument(doc: PersonDocument): void {
+  protected async removeDocument(doc: PersonDocument): Promise<void> {
     const id = this.id();
-    if (!id || !confirm(`¿Eliminar el documento "${doc.original_name}"?`)) return;
+    if (!id) return;
+
+    const accepted = await this.confirm.ask({
+      title: 'Eliminar documento',
+      message: `¿Seguro que quieres eliminar el documento "${doc.original_name}"?`,
+      confirmLabel: 'Eliminar',
+      danger: true,
+    });
+
+    if (!accepted) return;
 
     this.persons.deleteDocument(id, doc.id).subscribe({
       next: () => {

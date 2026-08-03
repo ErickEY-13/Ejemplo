@@ -1,12 +1,14 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
 
-/** Indicador de carga sencillo, sin dependencias externas. */
+/** Indicador de carga sencillo, apoyado en `p-progress-spinner`. */
 @Component({
   selector: 'app-spinner',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [ProgressSpinnerModule],
   template: `
     <div class="spinner" role="status">
-      <span class="spinner__circle" aria-hidden="true"></span>
+      <p-progress-spinner styleClass="spinner__circle" strokeWidth="4" animationDuration="0.7s" />
       <span class="spinner__label">{{ label() }}</span>
     </div>
   `,
@@ -21,22 +23,12 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
     }
 
     .spinner__circle {
-      width: 26px;
-      height: 26px;
-      border: 3px solid var(--c-border);
-      border-top-color: var(--c-primary);
-      border-radius: 50%;
-      animation: spin 0.7s linear infinite;
+      width: 32px;
+      height: 32px;
     }
 
     .spinner__label {
       font-size: 0.9rem;
-    }
-
-    @keyframes spin {
-      to {
-        transform: rotate(360deg);
-      }
     }
   `,
 })

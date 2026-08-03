@@ -1,12 +1,13 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { ButtonModule } from 'primeng/button';
 
 import { IconComponent } from '../../shared/components/icon/icon';
 
 @Component({
   selector: 'app-not-found',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, IconComponent],
+  imports: [RouterLink, IconComponent, ButtonModule],
   template: `
     <div class="card not-found">
       <span class="not-found__icon">
@@ -15,10 +16,7 @@ import { IconComponent } from '../../shared/components/icon/icon';
       <span class="not-found__code">404</span>
       <h1>Página no encontrada</h1>
       <p class="text-muted">La dirección a la que intentas acceder no existe o ha cambiado.</p>
-      <a class="btn btn--primary" routerLink="/">
-        <app-icon name="arrow-left" [size]="16" />
-        Volver al menú principal
-      </a>
+      <p-button severity="primary" icon="pi pi-arrow-left" label="Volver al menú principal" routerLink="/" />
     </div>
   `,
   styles: `

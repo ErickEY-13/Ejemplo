@@ -1,3 +1,13 @@
+:host ::ng-deep .p-card {
+  border: 0 !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
+
+:host ::ng-deep .p-card-body {
+  padding: 0 !important;
+}
+
 .form {
   padding: var(--sp-5);
 
@@ -74,24 +84,12 @@
   text-transform: uppercase;
 }
 
-.alert {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--sp-3);
+p-message {
+  display: block;
   margin-bottom: var(--sp-4);
-  padding: var(--sp-3) var(--sp-4);
-  border-radius: var(--radius-sm);
-  border-left: 4px solid var(--c-danger);
-  background: var(--c-danger-soft);
-  color: var(--c-danger-dark);
-  font-size: 0.9rem;
+}
 
-  &__icon {
-    margin-top: 1px;
-  }
-
-  ul {
-    margin: var(--sp-2) 0 0;
-    padding-left: var(--sp-5);
-  }
+.form__error-list {
+  margin: var(--sp-2) 0 0;
+  padding-left: var(--sp-5);
 }
