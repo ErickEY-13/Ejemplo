@@ -35,7 +35,9 @@ export type IconName =
   | 'phone'
   | 'heart'
   | 'history'
-  | 'file-text';
+  | 'file-text'
+  | 'table'
+  | 'grid';
 
 /**
  * Iconos vectoriales dibujados a mano, sin librerías externas.
@@ -202,6 +204,17 @@ export type IconName =
           <path d="M13.6 3.6v4.8h4.8" />
           <path d="M9.6 13.2h4.8" />
           <path d="M9.6 16.4h4.8" />
+        }
+        @case ('table') {
+          <rect x="3.2" y="4.4" width="17.6" height="15.2" rx="1.6" />
+          <path d="M3.2 9.6h17.6" />
+          <path d="M9.6 9.6v10" />
+        }
+        @case ('grid') {
+          <rect x="3.2" y="3.2" width="7.6" height="7.6" rx="1.2" />
+          <rect x="13.2" y="3.2" width="7.6" height="7.6" rx="1.2" />
+          <rect x="3.2" y="13.2" width="7.6" height="7.6" rx="1.2" />
+          <rect x="13.2" y="13.2" width="7.6" height="7.6" rx="1.2" />
         }
       }
     </svg>

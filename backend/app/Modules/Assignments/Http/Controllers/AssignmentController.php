@@ -104,6 +104,7 @@ class AssignmentController extends Controller
             $vehicle,
             (int) $request->validated('site_id'),
             $personId !== null ? (int) $personId : null,
+            $request->validated('assigned_at'),
             $request->validated('expected_return_at'),
             $request->validated('notes'),
         );

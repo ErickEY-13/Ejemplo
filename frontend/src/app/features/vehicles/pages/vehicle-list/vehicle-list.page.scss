@@ -141,3 +141,250 @@ tr.is-trashed {
     color: var(--c-text-muted);
   }
 }
+
+/* ─── Results header + toggle ─────────────────────────────────────────────── */
+
+.results-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--sp-3) var(--sp-4) var(--sp-2);
+}
+
+.results-count {
+  font-size: 0.85rem;
+  color: var(--c-text-muted);
+  font-weight: 600;
+}
+
+.view-toggle {
+  display: flex;
+  gap: 2px;
+  background: var(--c-surface-alt);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-sm);
+  padding: 3px;
+
+  &__btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: transparent;
+    border-radius: calc(var(--radius-sm) - 2px);
+    color: var(--c-text-muted);
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+
+    &:hover {
+      background: var(--c-border);
+      color: var(--c-text);
+    }
+
+    &.is-active {
+      background: var(--c-surface);
+      color: var(--c-primary);
+      box-shadow: var(--shadow-sm);
+    }
+  }
+}
+
+/* ─── Vehicle grid (card view) ────────────────────────────────────────────── */
+
+.vehicle-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--sp-4);
+  padding: var(--sp-2) var(--sp-4) var(--sp-5);
+
+  &.is-loading {
+    opacity: 0.55;
+    pointer-events: none;
+    transition: opacity 0.15s ease;
+  }
+
+  @media (max-width: 1024px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (max-width: 600px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Individual card */
+.vcard {
+  display: flex;
+  flex-direction: column;
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+  animation: card-in 0.25s ease both;
+
+  &:hover {
+    box-shadow: var(--shadow);
+    transform: translateY(-2px);
+  }
+
+  &.is-trashed {
+    opacity: 0.7;
+
+    .vcard__photo {
+      filter: grayscale(0.6);
+    }
+
+    .plate {
+      text-decoration: line-through;
+      color: var(--c-text-muted);
+    }
+  }
+
+  /* Stagger animation for each card */
+  @for $i from 1 through 30 {
+    &:nth-child(#{$i}) {
+      animation-delay: #{($i - 1) * 0.04}s;
+    }
+  }
+}
+
+@keyframes card-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Photo section */
+.vcard__photo {
+  position: relative;
+  height: 170px;
+  background: linear-gradient(135deg, var(--c-surface-alt), #e8f1fb);
+  overflow: hidden;
+}
+
+.vcard__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+
+  .vcard:hover & {
+    transform: scale(1.03);
+  }
+}
+
+.vcard__photo-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--c-border-strong);
+  gap: var(--sp-2);
+}
+
+/* Status badge */
+.vcard__status-badge {
+  position: absolute;
+  top: var(--sp-3);
+  right: var(--sp-3);
+}
+
+/* Body */
+.vcard__body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  padding: var(--sp-4);
+}
+
+.vcard__header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+}
+
+.vcard__name {
+  margin: 0;
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--c-text);
+  line-height: 1.3;
+}
+
+.vcard__year {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--c-text-subtle);
+}
+
+/* Chips */
+.vcard__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+
+.vcard__chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.55rem;
+  background: var(--c-primary-soft);
+  color: var(--c-primary-dark);
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+/* Assignment info */
+.vcard__assignment {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-top: var(--sp-3);
+  border-top: 1px solid var(--c-border);
+}
+
+.vcard__site {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--c-text);
+}
+
+.vcard__person {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  font-size: 0.8rem;
+  color: var(--c-text-muted);
+}
+
+.vcard__no-assignment {
+  font-size: 0.8rem;
+  color: var(--c-text-subtle);
+  font-style: italic;
+}
+
+/* Actions */
+.vcard__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+  padding: var(--sp-2) var(--sp-3);
+  border-top: 1px solid var(--c-border);
+  background: var(--c-surface-alt);
+}
+

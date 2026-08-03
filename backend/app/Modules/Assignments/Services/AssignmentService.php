@@ -10,6 +10,7 @@ use App\Modules\Persons\Models\Person;
 use App\Modules\Vehicles\Models\Vehicle;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -65,9 +66,9 @@ class AssignmentService
      * same active assignment before either closes it. The vehicle row always
      * exists and never disappears, unlike the active assignment row.
      */
-    public function assign(Vehicle $vehicle, int $siteId, ?int $personId, ?string $expectedReturnAt, ?string $notes): VehicleAssignment
+    public function assign(Vehicle $vehicle, int $siteId, ?int $personId, ?string $assignedAt, ?string $expectedReturnAt, ?string $notes): VehicleAssignment
     {
-        return DB::transaction(function () use ($vehicle, $siteId, $personId, $expectedReturnAt, $notes) {
+        return DB::transaction(function () use ($vehicle, $siteId, $personId, $assignedAt, $expectedReturnAt, $notes) {
             // Anchor lock: serializes concurrent assign() calls for the same vehicle
             Vehicle::query()->where('id', $vehicle->id)->lockForUpdate()->first();
 
@@ -77,13 +78,19 @@ class AssignmentService
                 ->whereNull('ended_at')
                 ->update(['ended_at' => now()]);
 
+            // assigned_at ya viene validado como <= hoy (AssignVehicleRequest); se
+            // respeta tal cual para permitir registrar una llegada pasada a la sede.
+            $resolvedAssignedAt = $assignedAt !== null
+                ? Carbon::parse($assignedAt)->startOfDay()
+                : now();
+
             return VehicleAssignment::query()->create([
-                'vehicle_id' => $vehicle->id,
-                'site_id' => $siteId,
-                'person_id' => $personId,
-                'assigned_at' => now(),
+                'vehicle_id'         => $vehicle->id,
+                'site_id'            => $siteId,
+                'person_id'          => $personId,
+                'assigned_at'        => $resolvedAssignedAt,
                 'expected_return_at' => $expectedReturnAt,
-                'notes' => $notes,
+                'notes'              => $notes,
             ]);
         });
     }

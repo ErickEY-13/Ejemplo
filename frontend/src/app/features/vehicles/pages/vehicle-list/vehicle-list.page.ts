@@ -62,6 +62,16 @@ export class VehicleListPage {
   private readonly notifications = inject(NotificationService);
   private readonly assignments = inject(AssignmentService);
 
+  private readonly VIEW_MODE_KEY = 'vehicles-view-mode';
+  protected readonly viewMode = signal<'table' | 'grid'>(
+    (localStorage.getItem(this.VIEW_MODE_KEY) as 'table' | 'grid') ?? 'table'
+  );
+
+  protected setViewMode(mode: 'table' | 'grid'): void {
+    this.viewMode.set(mode);
+    localStorage.setItem(this.VIEW_MODE_KEY, mode);
+  }
+
   protected readonly siteFilter = signal<number | null>(null);
 
   protected readonly sites = toSignal(

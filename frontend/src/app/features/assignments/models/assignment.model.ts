@@ -42,6 +42,7 @@ export interface PersonOption {
 export interface AssignVehiclePayload {
   site_id: number;
   person_id: number | null;
+  assigned_at: string | null;
   expected_return_at: string | null;
   notes: string | null;
 }

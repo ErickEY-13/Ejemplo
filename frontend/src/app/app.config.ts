@@ -47,6 +47,8 @@ export const appConfig: ApplicationConfig = {
           darkModeSelector: false,
         },
       },
+      license:
+        'eyJpZCI6ImUyY2UwMmUxLTc3NGYtNDliNC05OWVhLWMzOGNjYjA3YjM0ZiIsInByb2R1Y3QiOiJwcmltZXVpIiwidGllciI6ImNvbW11bml0eSIsInR5cGUiOiJkZXYiLCJpYXQiOjE3ODU3NTYzNjksImV4cCI6MTgxNzI5MjM2OX0.5sTI5jPN7zIOlxzX5PqMZCr2OJyQtRRSBQxnNYEVa_nGQ8itTuXHniA92RKSLbg9MbwkF8jpdDYbotVs7V9QAA',
     }),
     MessageService,
     ConfirmationService,

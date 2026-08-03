@@ -32,7 +32,7 @@ class AssignmentServiceTest extends TestCase
         $person = Person::factory()->create();
         $site = Site::query()->create(['code' => 'main', 'name' => 'Sede Central']);
 
-        $assignment = $this->service->assign($vehicle, $site->id, $person->id, null, null);
+        $assignment = $this->service->assign($vehicle, $site->id, $person->id, null, null, null);
 
         $this->assertSame($site->id, $assignment->site_id);
         $this->assertSame($person->id, $assignment->person_id);
@@ -47,8 +47,8 @@ class AssignmentServiceTest extends TestCase
         $siteB = Site::query()->create(['code' => 'north', 'name' => 'Sede Norte']);
         $person = Person::factory()->create();
 
-        $first = $this->service->assign($vehicle, $siteA->id, $person->id, null, null);
-        $second = $this->service->assign($vehicle, $siteB->id, $person->id, null, null);
+        $first = $this->service->assign($vehicle, $siteA->id, $person->id, null, null, null);
+        $second = $this->service->assign($vehicle, $siteB->id, $person->id, null, null, null);
 
         $this->assertNotNull($first->refresh()->ended_at);
         $this->assertNull($second->ended_at);
@@ -61,7 +61,7 @@ class AssignmentServiceTest extends TestCase
         $vehicle = Vehicle::factory()->create();
         $site = Site::query()->create(['code' => 'main', 'name' => 'Sede Central']);
 
-        $assignment = $this->service->assign($vehicle, $site->id, null, null, null);
+        $assignment = $this->service->assign($vehicle, $site->id, null, null, null, null);
 
         $this->assertNull($assignment->person_id);
         $this->assertSame($site->id, $assignment->site_id);
@@ -74,7 +74,7 @@ class AssignmentServiceTest extends TestCase
         $site = Site::query()->create(['code' => 'main', 'name' => 'Sede Central']);
         $person = Person::factory()->create();
 
-        $assignment = $this->service->assign($vehicle, $site->id, $person->id, null, null);
+        $assignment = $this->service->assign($vehicle, $site->id, $person->id, null, null, null);
 
         $this->service->unassign($vehicle);
 
@@ -90,8 +90,8 @@ class AssignmentServiceTest extends TestCase
         $siteA = Site::query()->create(['code' => 'main', 'name' => 'Sede Central']);
         $siteB = Site::query()->create(['code' => 'north', 'name' => 'Sede Norte']);
 
-        $first = $this->service->assign($vehicle, $siteA->id, null, null, null);
-        $second = $this->service->assign($vehicle, $siteB->id, null, null, null);
+        $first = $this->service->assign($vehicle, $siteA->id, null, null, null, null);
+        $second = $this->service->assign($vehicle, $siteB->id, null, null, null, null);
 
         $history = $this->service->history($vehicle);
 
@@ -108,8 +108,8 @@ class AssignmentServiceTest extends TestCase
         $siteA = Site::query()->create(['code' => 'main', 'name' => 'Sede Central']);
         $siteB = Site::query()->create(['code' => 'north', 'name' => 'Sede Norte']);
 
-        $this->service->assign($vehicleA, $siteA->id, null, null, null);
-        $this->service->assign($vehicleB, $siteB->id, null, null, null);
+        $this->service->assign($vehicleA, $siteA->id, null, null, null, null);
+        $this->service->assign($vehicleB, $siteB->id, null, null, null, null);
 
         $this->assertCount(2, $this->service->currentAll());
         $this->assertCount(1, $this->service->currentAll($siteA->id));
@@ -138,7 +138,7 @@ class AssignmentServiceTest extends TestCase
             $queriesExecuted[] = $query->sql;
         });
 
-        $this->service->assign($vehicle, $site->id, null, null, null);
+        $this->service->assign($vehicle, $site->id, null, null, null, null);
 
         // Verify that a SELECT...FOR UPDATE query on the vehicles table was executed first
         // This is the anchor lock that serializes concurrent assign() calls on the same vehicle

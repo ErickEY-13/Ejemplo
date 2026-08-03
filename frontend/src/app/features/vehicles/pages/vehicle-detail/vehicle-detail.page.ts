@@ -63,6 +63,7 @@ export class VehicleDetailPage {
   protected readonly selectedPerson = signal<PersonOption | null>(null);
   protected readonly assignmentNotes = signal('');
   protected readonly expectedReturnAt = signal('');
+  protected readonly assignedAt = signal('');
   protected readonly todayIso = new Date().toISOString().slice(0, 10);
 
   protected readonly history = signal<VehicleAssignment[]>([]);
@@ -87,6 +88,7 @@ export class VehicleDetailPage {
       this.selectedPerson.set(null);
       this.assignmentNotes.set('');
       this.expectedReturnAt.set('');
+      this.assignedAt.set('');
 
       this.load(id);
       this.loadAssignment(id);
@@ -216,6 +218,7 @@ export class VehicleDetailPage {
       .assign(this.id(), {
         site_id: siteId,
         person_id: this.selectedPerson()?.id ?? null,
+        assigned_at: this.assignedAt() || null,
         expected_return_at: this.expectedReturnAt() || null,
         notes: this.assignmentNotes().trim() || null,
       })
@@ -229,6 +232,7 @@ export class VehicleDetailPage {
           this.selectedPerson.set(null);
           this.assignmentNotes.set('');
           this.expectedReturnAt.set('');
+          this.assignedAt.set('');
           this.loadHistory(this.id());
           this.notifications.success(
             assignment.person

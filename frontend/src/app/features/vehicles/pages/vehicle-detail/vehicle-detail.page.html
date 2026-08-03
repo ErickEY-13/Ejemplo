@@ -272,6 +272,20 @@
           </div>
 
           <div class="field">
+            <label class="field__label" for="assignment-assigned-at">Fecha de inicio</label>
+            <input
+              id="assignment-assigned-at"
+              class="input"
+              pInputText
+              type="date"
+              [max]="todayIso"
+              [value]="assignedAt()"
+              (input)="assignedAt.set($any($event.target).value)"
+            />
+            <span class="field__hint">Opcional: fecha en que el vehículo llegó a esta sede. Si se deja en blanco, se usa hoy.</span>
+          </div>
+
+          <div class="field">
             <label class="field__label" for="assignment-return">Devolución prevista</label>
             <input
               id="assignment-return"
