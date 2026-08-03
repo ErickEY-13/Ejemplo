@@ -128,8 +128,13 @@ services:
     volumes:
       # Permite servir los archivos subidos (public/storage) generados por Laravel.
       - app_storage:/var/www/html/storage:ro
+      # Certificados TLS de Let's Encrypt (montados desde el host).
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+      # Webroot para el challenge ACME de renovación automática.
+      - certbot_webroot:/var/www/certbot:ro
     ports:
       - "${HTTP_PORT:-80}:80"
+      - "${HTTPS_PORT:-443}:443"
     depends_on:
       - app
     networks:
@@ -139,6 +144,8 @@ volumes:
   db_data:
     driver: local
   app_storage:
+    driver: local
+  certbot_webroot:
     driver: local
 
 networks:

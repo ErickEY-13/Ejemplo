@@ -10,8 +10,8 @@ WORKDIR /app
 
 ENV NG_CLI_ANALYTICS=false
 
-COPY frontend/package.json frontend/package-lock.json ./
-RUN npm ci
+COPY frontend/package.json frontend/package-lock.json frontend/.npmrc ./
+RUN npm ci --legacy-peer-deps
 
 COPY frontend/ ./
 RUN npm run build -- --configuration production
