@@ -58,11 +58,20 @@ class AssignmentService
      * hay) y crea una nueva. Es la única forma de escribir en
      * `vehicle_assignments`, así que el historial queda completo por
      * construcción.
+     *
+     * Uses row-level locking (FOR UPDATE) to prevent race conditions when
+     * concurrent requests try to assign the same vehicle: only one can
+     * read and close the active row, the others wait.
      */
     public function assign(Vehicle $vehicle, int $siteId, ?int $personId, ?string $expectedReturnAt, ?string $notes): VehicleAssignment
     {
         return DB::transaction(function () use ($vehicle, $siteId, $personId, $expectedReturnAt, $notes) {
-            $this->current($vehicle)?->update(['ended_at' => now()]);
+            VehicleAssignment::query()
+                ->where('vehicle_id', $vehicle->id)
+                ->whereNull('ended_at')
+                ->lockForUpdate()
+                ->first()
+                ?->update(['ended_at' => now()]);
 
             return VehicleAssignment::query()->create([
                 'vehicle_id' => $vehicle->id,

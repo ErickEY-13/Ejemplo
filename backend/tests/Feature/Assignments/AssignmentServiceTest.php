@@ -125,4 +125,32 @@ class AssignmentServiceTest extends TestCase
 
         $this->assertSame(['Sede Central', 'Sede Norte'], $names);
     }
+
+    #[Test]
+    public function asignar_usa_row_locking_para_prevenir_race_conditions(): void
+    {
+        $vehicle = Vehicle::factory()->create();
+        $site = Site::query()->create(['code' => 'main', 'name' => 'Sede Central']);
+
+        // Capture SQL queries executed during assign()
+        $queriesExecuted = [];
+        \Illuminate\Support\Facades\DB::listen(function ($query) use (&$queriesExecuted) {
+            $queriesExecuted[] = $query->sql;
+        });
+
+        $this->service->assign($vehicle, $site->id, null, null, null);
+
+        // Verify that a SELECT query with FOR UPDATE was executed
+        $selectForUpdateQuery = array_filter(
+            $queriesExecuted,
+            fn (string $sql) => stripos($sql, 'select') !== false
+                && stripos($sql, 'vehicle_assignments') !== false
+                && stripos($sql, 'for update') !== false
+        );
+
+        $this->assertNotEmpty(
+            $selectForUpdateQuery,
+            'Expected a SELECT...FOR UPDATE query in the transaction, but none was found. Queries: ' . implode('; ', $queriesExecuted)
+        );
+    }
 }
