@@ -147,7 +147,7 @@
   </div>
 
   <section class="card detail-assignment">
-    <h2 class="detail-assignment__title">Responsable asignado</h2>
+    <h2 class="detail-assignment__title">Sede y responsable asignado</h2>
 
     @if (assignmentLoading()) {
       <app-spinner label="Cargando asignación…" />
@@ -156,14 +156,20 @@
         <div class="detail-assignment__current">
           <div class="detail-assignment__who">
             <div>
-              <span class="cell-title">{{ current.person.full_name }}</span>
-              <span class="cell-sub">
-                {{ current.person.document_number }}
-                @if (current.person.site) {
-                  · {{ current.person.site }}
+              <span class="cell-title">
+                @if (current.person) {
+                  {{ current.person.full_name }}
+                } @else {
+                  Sin responsable asignado
                 }
-                @if (current.person.deleted_at) {
-                  · (persona eliminada)
+              </span>
+              <span class="cell-sub">
+                {{ current.site?.name ?? 'Sede no registrada' }}
+                @if (current.person) {
+                  · {{ current.person.document_number }}
+                  @if (current.person.deleted_at) {
+                    · (persona eliminada)
+                  }
                 }
               </span>
             </div>
@@ -174,9 +180,15 @@
           </div>
 
           <p class="detail-assignment__meta">
-            Se lo llevó el {{ current.assigned_at | date: 'mediumDate' }} ({{
-              assignmentDuration(current.assigned_at)
-            }})
+            @if (current.person) {
+              Se lo llevó el {{ current.assigned_at | date: 'mediumDate' }} ({{
+                assignmentDuration(current.assigned_at)
+              }})
+            } @else {
+              En esta sede desde el {{ current.assigned_at | date: 'mediumDate' }} ({{
+                assignmentDuration(current.assigned_at)
+              }})
+            }
             @if (current.expected_return_at) {
               · devolución prevista el {{ current.expected_return_at | date: 'mediumDate' }}
             }
@@ -193,7 +205,7 @@
                 [text]="true"
                 size="small"
                 icon="pi pi-pencil"
-                label="Reasignar"
+                label="Trasladar / reasignar"
                 (onClick)="showAssignForm.set(true)"
               />
               <p-button
@@ -212,7 +224,23 @@
       @if (!assignment() || showAssignForm()) {
         <div class="detail-assignment__form">
           <div class="field">
-            <label class="field__label" for="assignment-person">Buscar persona</label>
+            <label class="field__label" for="assignment-site">Sede</label>
+            <select
+              id="assignment-site"
+              class="input"
+              [value]="selectedSiteId() ?? ''"
+              (change)="onSiteChange($any($event.target).value)"
+            >
+              <option value="" disabled selected hidden>Selecciona una sede</option>
+              @for (site of sites(); track site.id) {
+                <option [value]="site.id">{{ site.name }}</option>
+              }
+            </select>
+            <span class="field__hint">Obligatoria: a dónde queda el vehículo.</span>
+          </div>
+
+          <div class="field">
+            <label class="field__label" for="assignment-person">Buscar persona (opcional)</label>
             <input
               id="assignment-person"
               class="input"
@@ -281,14 +309,45 @@
             <p-button
               severity="primary"
               size="small"
-              [disabled]="!selectedPerson() || assigning()"
+              [disabled]="!selectedSiteId() || assigning()"
               [loading]="assigning()"
-              [label]="assigning() ? 'Guardando…' : assignment() ? 'Reasignar' : 'Asignar'"
+              [label]="assigning() ? 'Guardando…' : assignment() ? 'Trasladar' : 'Asignar'"
               (onClick)="assign()"
             />
           </div>
         </div>
       }
+    }
+  </section>
+
+  <section class="card detail-history">
+    <h2 class="detail-assignment__title">Historial de sede y responsable</h2>
+
+    @if (historyLoading()) {
+      <app-spinner label="Cargando historial…" />
+    } @else if (history().length === 0) {
+      <p class="detail-history__empty">Este vehículo todavía no tiene movimientos registrados.</p>
+    } @else {
+      <table class="detail-history__table">
+        <thead>
+          <tr>
+            <th>Sede</th>
+            <th>Responsable</th>
+            <th>Desde</th>
+            <th>Hasta</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of history(); track row.id) {
+            <tr>
+              <td>{{ row.site?.name ?? 'Sin registrar' }}</td>
+              <td>{{ row.person?.full_name ?? 'Sin responsable' }}</td>
+              <td>{{ row.assigned_at | date: 'mediumDate' }}</td>
+              <td>{{ row.ended_at ? (row.ended_at | date: 'mediumDate') : 'Actual' }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
     }
   </section>
 }

@@ -1,6 +1,6 @@
 import { DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, effect, inject, input, signal } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { Router, RouterLink } from '@angular/router';
 import { Subject, of } from 'rxjs';
 import { catchError, debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
@@ -14,7 +14,7 @@ import { ConfirmService } from '../../../../shared/components/confirm-dialog/con
 import { IconComponent } from '../../../../shared/components/icon/icon';
 import { SpinnerComponent } from '../../../../shared/components/spinner/spinner';
 import { AssignmentService } from '../../../assignments/services/assignment.service';
-import { PersonOption, VehicleAssignment } from '../../../assignments/models/assignment.model';
+import { PersonOption, Site, VehicleAssignment } from '../../../assignments/models/assignment.model';
 import { Vehicle } from '../../models/vehicle.model';
 import { VehicleService } from '../../services/vehicle.service';
 
@@ -56,6 +56,7 @@ export class VehicleDetailPage {
   protected readonly assignmentLoading = signal(true);
   protected readonly assigning = signal(false);
   protected readonly showAssignForm = signal(false);
+  protected readonly selectedSiteId = signal<number | null>(null);
   protected readonly personQuery = signal('');
   protected readonly personResults = signal<PersonOption[]>([]);
   protected readonly searchingPeople = signal(false);
@@ -63,6 +64,14 @@ export class VehicleDetailPage {
   protected readonly assignmentNotes = signal('');
   protected readonly expectedReturnAt = signal('');
   protected readonly todayIso = new Date().toISOString().slice(0, 10);
+
+  protected readonly history = signal<VehicleAssignment[]>([]);
+  protected readonly historyLoading = signal(true);
+
+  protected readonly sites = toSignal(
+    this.assignments.getSites().pipe(catchError(() => of([] as Site[]))),
+    { initialValue: [] as Site[] },
+  );
 
   /** Texto del buscador de personas, con retardo para no lanzar una petición por tecla. */
   private readonly personSearch = new Subject<string>();
@@ -72,6 +81,7 @@ export class VehicleDetailPage {
       const id = this.id();
 
       this.showAssignForm.set(false);
+      this.selectedSiteId.set(null);
       this.personQuery.set('');
       this.personResults.set([]);
       this.selectedPerson.set(null);
@@ -80,6 +90,7 @@ export class VehicleDetailPage {
 
       this.load(id);
       this.loadAssignment(id);
+      this.loadHistory(id);
     });
 
     this.personSearch
@@ -176,6 +187,10 @@ export class VehicleDetailPage {
     });
   }
 
+  protected onSiteChange(value: string): void {
+    this.selectedSiteId.set(value ? Number(value) : null);
+  }
+
   protected onPersonSearch(value: string): void {
     this.personQuery.set(value);
     this.selectedPerson.set(null);
@@ -189,9 +204,9 @@ export class VehicleDetailPage {
   }
 
   protected assign(): void {
-    const person = this.selectedPerson();
+    const siteId = this.selectedSiteId();
 
-    if (!person) {
+    if (!siteId) {
       return;
     }
 
@@ -199,7 +214,8 @@ export class VehicleDetailPage {
 
     this.assignments
       .assign(this.id(), {
-        person_id: person.id,
+        site_id: siteId,
+        person_id: this.selectedPerson()?.id ?? null,
         expected_return_at: this.expectedReturnAt() || null,
         notes: this.assignmentNotes().trim() || null,
       })
@@ -208,11 +224,17 @@ export class VehicleDetailPage {
           this.assignment.set(assignment);
           this.assigning.set(false);
           this.showAssignForm.set(false);
+          this.selectedSiteId.set(null);
           this.personQuery.set('');
           this.selectedPerson.set(null);
           this.assignmentNotes.set('');
           this.expectedReturnAt.set('');
-          this.notifications.success(`Vehículo asignado a ${assignment.person.full_name}.`);
+          this.loadHistory(this.id());
+          this.notifications.success(
+            assignment.person
+              ? `Vehículo trasladado a ${assignment.site?.name} y asignado a ${assignment.person.full_name}.`
+              : `Vehículo trasladado a ${assignment.site?.name}.`,
+          );
         },
         error: () => this.assigning.set(false),
       });
@@ -233,6 +255,7 @@ export class VehicleDetailPage {
     this.assignments.unassign(this.id()).subscribe({
       next: () => {
         this.assignment.set(null);
+        this.loadHistory(this.id());
         this.notifications.success('Se quitó la asignación del vehículo.');
       },
     });
@@ -283,6 +306,18 @@ export class VehicleDetailPage {
         this.assignmentLoading.set(false);
       },
       error: () => this.assignmentLoading.set(false),
+    });
+  }
+
+  private loadHistory(id: string): void {
+    this.historyLoading.set(true);
+
+    this.assignments.history(id).subscribe({
+      next: (history) => {
+        this.history.set(history);
+        this.historyLoading.set(false);
+      },
+      error: () => this.historyLoading.set(false),
     });
   }
 }

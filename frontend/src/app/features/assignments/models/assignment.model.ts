@@ -3,12 +3,22 @@
  * Si cambia el recurso en el backend, hay que actualizar esta interfaz.
  */
 export interface VehicleAssignment {
+  id: number;
   vehicle_id: number;
-  person: AssignedPerson;
+  site: Site | null;
+  person: AssignedPerson | null;
   notes: string | null;
   assigned_at: string;
+  ended_at: string | null;
   expected_return_at: string | null;
   is_overdue: boolean;
+}
+
+/** Sede de un vehículo. Espejo de `App\Modules\Assignments\Models\Site`. */
+export interface Site {
+  id: number;
+  code: string;
+  name: string;
 }
 
 export interface AssignedPerson {
@@ -30,7 +40,8 @@ export interface PersonOption {
 
 /** Cuerpo que acepta PUT /api/assignments/{vehicle}. */
 export interface AssignVehiclePayload {
-  person_id: number;
+  site_id: number;
+  person_id: number | null;
   expected_return_at: string | null;
   notes: string | null;
 }

@@ -226,3 +226,37 @@
     }
   }
 }
+
+.detail-history {
+  margin-top: var(--sp-5);
+  padding: var(--sp-5);
+
+  &__empty {
+    margin: 0;
+    color: var(--c-text-muted);
+  }
+
+  &__table {
+    width: 100%;
+    border-collapse: collapse;
+
+    th,
+    td {
+      padding: var(--sp-2) var(--sp-3);
+      text-align: left;
+      border-bottom: 1px solid var(--c-border);
+    }
+
+    th {
+      font-size: 0.78rem;
+      font-weight: 650;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--c-text-subtle);
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+  }
+}
