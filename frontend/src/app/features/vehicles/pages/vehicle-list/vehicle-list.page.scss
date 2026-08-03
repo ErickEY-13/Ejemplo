@@ -121,6 +121,40 @@
   letter-spacing: 0.06em;
 }
 
+/* Miniatura en la vista de tabla: la de tarjetas ya muestra la foto grande,
+   pero la tabla es la vista por defecto y ahí también conviene reconocer el
+   vehículo de un vistazo. */
+.vehicle-cell {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.vehicle-thumb {
+  width: 56px;
+  height: 42px;
+  flex-shrink: 0;
+  overflow: hidden;
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-sm);
+  background: linear-gradient(135deg, var(--c-surface-alt), #e8f1fb);
+
+  &__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  &__placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    color: var(--c-text-subtle);
+  }
+}
+
 .cell-title {
   display: block;
   font-weight: 600;

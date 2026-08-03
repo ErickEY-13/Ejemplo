@@ -3,6 +3,9 @@
 .env.*
 !.env.example
 
+# Script de despliegue local: contiene credenciales del VPS en claro.
+/deploy_vps.py
+
 # ------------------------------------------------------------- Dependencias
 /backend/vendor/
 /frontend/node_modules/

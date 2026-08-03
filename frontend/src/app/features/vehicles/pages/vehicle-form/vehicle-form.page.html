@@ -30,6 +30,44 @@
         <p>Completa los datos principales y deja la información lista para su consulta y mantenimiento.</p>
       </div>
 
+      <!-- ============================================ FOTO DEL VEHÍCULO -->
+      <div class="photo-section">
+        <div class="photo-frame" (click)="photoInput.click()">
+          @if (photoPreview()) {
+            <img [src]="photoPreview()" alt="Foto del vehículo" class="photo-frame__img" />
+          } @else {
+            <span class="photo-frame__placeholder">
+              <app-icon name="car" [size]="38" />
+            </span>
+          }
+          <div class="photo-frame__overlay">
+            <app-icon name="camera" [size]="24" />
+          </div>
+          <input
+            #photoInput
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            class="visually-hidden"
+            (change)="onPhotoSelected($event)"
+          />
+        </div>
+        <div class="photo-section__info">
+          <span class="photo-section__title">Foto del vehículo</span>
+          <span class="photo-section__hint">JPEG, PNG o WebP. Máximo 4 MB.</span>
+          @if (photoPreview()) {
+            <p-button
+              severity="danger"
+              [text]="true"
+              size="small"
+              icon="pi pi-trash"
+              label="Eliminar foto"
+              styleClass="photo-section__remove"
+              (onClick)="removePhoto()"
+            />
+          }
+        </div>
+      </div>
+
       <fieldset class="form__section">
       <legend class="form__legend">Identificación</legend>
 

@@ -3,7 +3,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { of } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { catchError, switchMap } from 'rxjs/operators';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { CheckboxModule } from 'primeng/checkbox';
@@ -15,6 +15,7 @@ import { TextareaModule } from 'primeng/textarea';
 
 import { ApiError } from '../../../../core/api/api.types';
 import { NotificationService } from '../../../../core/notifications/notification.service';
+import { IconComponent } from '../../../../shared/components/icon/icon';
 import { SpinnerComponent } from '../../../../shared/components/spinner/spinner';
 import { applyServerErrors, firstErrorMessage } from '../../../../shared/forms/server-errors';
 import { VehicleMetadata, VehiclePayload } from '../../models/vehicle.model';
@@ -32,6 +33,7 @@ const CURRENT_YEAR = new Date().getFullYear();
   imports: [
     ReactiveFormsModule,
     RouterLink,
+    IconComponent,
     SpinnerComponent,
     ButtonModule,
     CardModule,
@@ -59,6 +61,11 @@ export class VehicleFormPage {
   protected readonly saving = signal(false);
   protected readonly generalErrors = signal<string[]>([]);
   protected readonly maxYear = CURRENT_YEAR + 1;
+
+  /** URL remota o data URL local que se muestra en la vista previa. */
+  protected readonly photoPreview = signal<string | null>(null);
+  /** Solo se usa al crear: en edición la foto se sube en cuanto se elige. */
+  private photoFile: File | null = null;
 
   protected readonly metadata = toSignal(
     this.vehicles.metadata().pipe(catchError(() => of(null as VehicleMetadata | null))),
@@ -107,6 +114,7 @@ export class VehicleFormPage {
             is_active: vehicle.is_active,
             notes: vehicle.notes ?? '',
           });
+          this.photoPreview.set(vehicle.photo_url ?? null);
           this.loading.set(false);
         },
         error: () => {
@@ -121,6 +129,66 @@ export class VehicleFormPage {
     return firstErrorMessage(this.form, field, label);
   }
 
+  // ---------------------------------------------------------------- Foto
+
+  protected onPhotoSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+
+    if (!file) {
+      return;
+    }
+
+    if (file.size > 4 * 1024 * 1024) {
+      this.notifications.error('La foto no puede pesar más de 4 MB.');
+      return;
+    }
+
+    this.photoFile = file;
+
+    // Vista previa inmediata, sin esperar al backend.
+    const reader = new FileReader();
+    reader.onload = () => this.photoPreview.set(reader.result as string);
+    reader.readAsDataURL(file);
+
+    // Editando ya existe el vehículo: se sube al momento para no perder la
+    // foto si el usuario se marcha sin guardar. Al crear no hay id todavía,
+    // así que la subida se encadena en submit().
+    const id = this.id();
+    if (id) {
+      this.vehicles.uploadPhoto(id, file).subscribe({
+        next: (vehicle) => {
+          this.photoPreview.set(vehicle.photo_url);
+          this.photoFile = null;
+          this.notifications.success('Foto actualizada correctamente.');
+        },
+        error: () => this.notifications.error('No se pudo subir la foto.'),
+      });
+    }
+
+    // Permite volver a elegir el mismo archivo tras un error.
+    input.value = '';
+  }
+
+  protected removePhoto(): void {
+    const id = this.id();
+
+    if (!id) {
+      this.photoPreview.set(null);
+      this.photoFile = null;
+      return;
+    }
+
+    this.vehicles.deletePhoto(id).subscribe({
+      next: () => {
+        this.photoPreview.set(null);
+        this.photoFile = null;
+        this.notifications.success('Foto eliminada.');
+      },
+      error: () => this.notifications.error('No se pudo eliminar la foto.'),
+    });
+  }
+
   protected submit(): void {
     this.generalErrors.set([]);
 
@@ -132,7 +200,29 @@ export class VehicleFormPage {
 
     const payload = this.toPayload();
     const id = this.id();
-    const request = id ? this.vehicles.update(id, payload) : this.vehicles.create(payload);
+    const photo = this.photoFile;
+
+    // Al crear, la foto solo puede subirse cuando el vehículo ya tiene id.
+    const request = id
+      ? this.vehicles.update(id, payload)
+      : this.vehicles
+          .create(payload)
+          .pipe(
+            switchMap((vehicle) =>
+              photo
+                ? this.vehicles.uploadPhoto(vehicle.id, photo).pipe(
+                    // El vehículo ya está creado: un fallo de la foto no debe
+                    // deshacer el alta, solo avisar de que hay que reintentarla.
+                    catchError(() => {
+                      this.notifications.error(
+                        'El vehículo se registró, pero no se pudo subir la foto. Vuelve a intentarlo desde la edición.',
+                      );
+                      return of(vehicle);
+                    }),
+                  )
+                : of(vehicle),
+            ),
+          );
 
     this.saving.set(true);
 

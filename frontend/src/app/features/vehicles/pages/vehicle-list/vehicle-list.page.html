@@ -262,8 +262,21 @@
                 <span class="plate">{{ vehicle.plate }}</span>
               </td>
               <td>
-                <span class="cell-title">{{ vehicle.brand }} {{ vehicle.model }}</span>
-                <span class="cell-sub">{{ vehicle.color ?? 'Sin color' }}</span>
+                <div class="vehicle-cell">
+                  <div class="vehicle-thumb">
+                    @if (vehicle.photo_url) {
+                      <img [src]="vehicle.photo_url" [alt]="'Foto de ' + vehicle.plate" class="vehicle-thumb__img" />
+                    } @else {
+                      <span class="vehicle-thumb__placeholder">
+                        <app-icon name="car" [size]="18" />
+                      </span>
+                    }
+                  </div>
+                  <div>
+                    <span class="cell-title">{{ vehicle.brand }} {{ vehicle.model }}</span>
+                    <span class="cell-sub">{{ vehicle.color ?? 'Sin color' }}</span>
+                  </div>
+                </div>
               </td>
               <td>{{ vehicle.year }}</td>
               <td>
