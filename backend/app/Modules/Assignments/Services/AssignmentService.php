@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace App\Modules\Assignments\Services;
 
+use App\Modules\Assignments\Models\Site;
 use App\Modules\Assignments\Models\VehicleAssignment;
 use App\Modules\Persons\Models\Person;
 use App\Modules\Vehicles\Models\Vehicle;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Lógica de negocio del módulo de Assignments.
@@ -20,29 +24,72 @@ class AssignmentService
     {
         return VehicleAssignment::query()
             ->where('vehicle_id', $vehicle->id)
+            ->whereNull('ended_at')
             ->first();
     }
 
     /**
-     * Asigna o reasigna el vehículo: reemplaza la asignación anterior si
-     * existía (no se guarda historial).
+     * @return Collection<int, VehicleAssignment>
      */
-    public function assign(Vehicle $vehicle, int $personId, ?string $expectedReturnAt, ?string $notes): VehicleAssignment
+    public function currentAll(?int $siteId = null): Collection
     {
-        return VehicleAssignment::query()->updateOrCreate(
-            ['vehicle_id' => $vehicle->id],
-            [
+        return VehicleAssignment::query()
+            ->whereNull('ended_at')
+            ->with(['person', 'site'])
+            ->when($siteId !== null, fn (Builder $query) => $query->where('site_id', $siteId))
+            ->get();
+    }
+
+    /**
+     * @return Collection<int, VehicleAssignment>
+     */
+    public function history(Vehicle $vehicle): Collection
+    {
+        return VehicleAssignment::query()
+            ->where('vehicle_id', $vehicle->id)
+            ->with(['person', 'site'])
+            ->orderByDesc('assigned_at')
+            ->orderByDesc('id')
+            ->get();
+    }
+
+    /**
+     * Traslada/(re)asigna el vehículo: cierra la asignación activa (si la
+     * hay) y crea una nueva. Es la única forma de escribir en
+     * `vehicle_assignments`, así que el historial queda completo por
+     * construcción.
+     */
+    public function assign(Vehicle $vehicle, int $siteId, ?int $personId, ?string $expectedReturnAt, ?string $notes): VehicleAssignment
+    {
+        return DB::transaction(function () use ($vehicle, $siteId, $personId, $expectedReturnAt, $notes) {
+            $this->current($vehicle)?->update(['ended_at' => now()]);
+
+            return VehicleAssignment::query()->create([
+                'vehicle_id' => $vehicle->id,
+                'site_id' => $siteId,
                 'person_id' => $personId,
                 'assigned_at' => now(),
                 'expected_return_at' => $expectedReturnAt,
                 'notes' => $notes,
-            ],
-        );
+            ]);
+        });
     }
 
+    /**
+     * Cierra la asignación activa del vehículo, si la hay. No borra el
+     * historial: solo deja de estar vigente.
+     */
     public function unassign(Vehicle $vehicle): void
     {
-        VehicleAssignment::query()->where('vehicle_id', $vehicle->id)->delete();
+        $this->current($vehicle)?->update(['ended_at' => now()]);
+    }
+
+    /**
+     * @return Collection<int, Site>
+     */
+    public function sites(): Collection
+    {
+        return Site::query()->orderBy('name')->get();
     }
 
     /**
