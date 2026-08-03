@@ -28,6 +28,38 @@ return new class extends Migration
 
     public function down(): void
     {
+        // Clean up rows that would violate the old constraints before reverting.
+        // This migration enabled multiple rows per vehicle_id and nullable person_id,
+        // so we need to handle both when rolling back.
+
+        // Delete rows with NULL person_id (the old schema required person_id to be NOT NULL)
+        DB::table('vehicle_assignments')->whereNull('person_id')->delete();
+
+        // For vehicle_ids with multiple rows, keep only the most recent by assigned_at
+        // and delete the rest (the old schema had a unique constraint on vehicle_id)
+        $duplicateVehicleIds = DB::table('vehicle_assignments')
+            ->selectRaw('vehicle_id')
+            ->groupBy('vehicle_id')
+            ->havingRaw('count(*) > 1')
+            ->pluck('vehicle_id');
+
+        foreach ($duplicateVehicleIds as $vehicleId) {
+            // Find the row to keep: most recently assigned_at
+            $rowToKeep = DB::table('vehicle_assignments')
+                ->where('vehicle_id', $vehicleId)
+                ->orderByDesc('assigned_at')
+                ->first(['id']);
+
+            // Delete all other rows for this vehicle
+            if ($rowToKeep) {
+                DB::table('vehicle_assignments')
+                    ->where('vehicle_id', $vehicleId)
+                    ->where('id', '!=', $rowToKeep->id)
+                    ->delete();
+            }
+        }
+
+        // Now safe to enforce the old constraints
         DB::statement('ALTER TABLE vehicle_assignments ALTER COLUMN person_id SET NOT NULL');
 
         Schema::table('vehicle_assignments', function (Blueprint $table) {
