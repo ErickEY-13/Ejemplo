@@ -98,8 +98,8 @@ Las filas actuales de `vehicle_assignments` (a lo sumo una por vehículo, ya que
 
 ## Testing
 
-- **Backend**: tests de `AssignmentService` cubriendo — (1) una reasignación cierra la asignación anterior y crea una nueva; (2) `history()` devuelve las asignaciones en el orden correcto con sede/responsable; (3) `unassign()` cierra sin borrar la fila; (4) se puede asignar una sede sin responsable.
-- **Frontend**: tests de componente para el formulario de traslado (validación de sede obligatoria, responsable opcional) y para la vista de historial (renderizado de filas), siguiendo los patrones ya usados en `features/assignments`.
+- **Backend**: tests de `AssignmentService` y de los endpoints HTTP cubriendo — (1) una reasignación cierra la asignación anterior y crea una nueva; (2) `history()` devuelve las asignaciones en el orden correcto con sede/responsable; (3) `unassign()` cierra sin borrar la fila; (4) se puede asignar una sede sin responsable; (5) rechazo de una asignación sin sede.
+- **Frontend**: el proyecto no tiene tests de componentes para páginas/features hoy (solo 2 specs de utilidades puntuales: `api.service.spec.ts` y `server-errors.spec.ts`), así que no se introduce ese patrón para esta feature — se sigue la convención existente. La verificación del formulario de traslado, el filtro por sede y la vista de historial se hace manualmente en el navegador (servidor de desarrollo) antes de dar la tarea por terminada.
 
 ## Fuera de alcance
 
