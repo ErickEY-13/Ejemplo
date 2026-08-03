@@ -168,7 +168,7 @@
 
   @if (loading() && items().length === 0) {
     <app-spinner label="Cargando vehículos…" />
-  } @else if (items().length === 0) {
+  } @else if (visibleItems().length === 0) {
     <app-empty-state
       icon="car"
       title="No hay vehículos que mostrar"
